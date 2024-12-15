@@ -16,6 +16,7 @@ from torch_geometric.nn import GCNConv
 from torch.utils.data import Dataset, DataLoader
 from typing import List, Dict, Tuple
 import pandas as pd
+import pdb
 
 # -------------------------------
 # 1. POSE DETECTION & FEATURE EXTRACTION
@@ -31,8 +32,10 @@ class PoseDetector:
         )
 
     def detect_pose(self, frame: np.ndarray) -> Dict:
+        pdb.set_trace()
         """Detect pose landmarks in a single frame"""
         results = self.pose.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
         if results.pose_landmarks:
             return self._format_landmarks(results.pose_landmarks)
         return None
@@ -111,15 +114,39 @@ class DataProcessor:
 
     def process_video(self, video_path: str) -> Tuple[np.ndarray, np.ndarray]:
         """Process entire video and return features and windows"""
+        # pdb.set_trace()
         frames = self._extract_frames(video_path)
         features = self._process_frames(frames)
         windows = self._create_windows(features)
         return windows
 
+    def process_videos_in_folder(self, folder_path: str) -> List[Tuple[np.ndarray, np.ndarray]]:
+        """Process all videos in a folder and return a list of features and windows"""
+        video_files = self._list_video_files(folder_path)
+        all_windows = []
+        for video_file in video_files:
+            windows = self.process_video(video_file)
+            all_windows.append(windows)
+        return all_windows
+
+    def _list_video_files(self, folder_path: str) -> List[str]:
+        """List all video files in a folder"""
+        video_extensions = ('.mp4', '.avi', '.mov', '.mkv')
+        return [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith(video_extensions)]
+
     def _extract_frames(self, video_path: str) -> List[np.ndarray]:
         """Extract frames from video"""
-        # Implementation needed
-        return []
+        frames = []
+        cap = cv2.VideoCapture(video_path)
+        
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frames.append(frame)
+        
+        cap.release()
+        return frames
 
     def _process_frames(self, frames: List[np.ndarray]) -> List[Dict]:
         """Process each frame through pose detection and feature extraction"""
@@ -247,19 +274,19 @@ def main():
     
     # Initialize components
     data_processor = DataProcessor()
-    predictor = FallPredictor(model_config)
+    # predictor = FallPredictor(model_config)
     
     # Process data
-    train_data = data_processor.process_video("path_to_train_video")
-    test_data = data_processor.process_video("path_to_test_video")
-    
+    train_data = data_processor.process_video("dataset/chute02/cam1.avi")
+    test_data = data_processor.process_video("dataset/chute02/cam2.avi")
+    print("data--------------->", train_data)
     # Create data loaders
     train_loader = DataLoader(train_data, batch_size=32)
     test_loader = DataLoader(test_data, batch_size=32)
     
-    # Train and evaluate
-    predictor.train(train_loader, num_epochs=100)
-    metrics = predictor.evaluate(test_loader)
+    # # Train and evaluate
+    # predictor.train(train_loader, num_epochs=100)
+    # metrics = predictor.evaluate(test_loader)
     
     print("Example usage completed")
 
