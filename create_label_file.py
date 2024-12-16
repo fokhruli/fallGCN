@@ -302,9 +302,28 @@ def generate_fall_labels():
     labels_df = pd.DataFrame(fall_labels, columns=['chute', 'cam', 'start', 'end', 'label'])
     labels_df = labels_df.sort_values(['chute', 'cam', 'start']).reset_index(drop=True)
     
-    return labels_df
+    # Combine consecutive rows with the same label
+    combined_labels = []
+    prev_row = None
+    
+    for _, row in labels_df.iterrows():
+        if prev_row is not None and row['label'] == prev_row['label'] and row['start'] == prev_row['end'] + 1:
+            # Combine with previous row
+            prev_row['end'] = row['end']
+        else:
+            if prev_row is not None:
+                combined_labels.append(prev_row)
+            prev_row = row
+    
+    if prev_row is not None:
+        combined_labels.append(prev_row)
+    
+    combined_labels_df = pd.DataFrame(combined_labels, columns=['chute', 'cam', 'start', 'end', 'label'])
+    
+    return combined_labels_df
 
-def save_labels(labels_df, output_file='fall_detection_labels.csv'):
+
+def save_labels(labels_df, output_file='fall_detection_labels_combines.csv'):
     """Save labels to CSV file"""
     labels_df.to_csv(output_file, index=False)
     print(f"Labels saved to {output_file}")
