@@ -6,5 +6,8 @@ venv/
 code_torch/best_model.pth
 pose_landmarker.task
 *.txt
+*.sh
 STGCN_LSTM/Train_X_openpose.csv
 STGCN_LSTM/Train_Y_openpose.csv
+Train_X_fall.csv
+Train_y_fall.csv
