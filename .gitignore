@@ -1,2 +1,7 @@
 dataset/
 fixed length attention/
+venv/
+*.pth
+!spec/*.json
+code_torch/best_model.pth
+pose_landmarker.task
