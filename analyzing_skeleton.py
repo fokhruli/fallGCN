@@ -291,7 +291,7 @@ def draw_skeleton_opencv(pose_df, connections=SKELETON_CONNECTIONS, image_size=(
 # Example Usage
 if __name__ == "__main__":
     # Load the pose data
-    pose_df = load_pose_data("X_train_fall_90.csv")
+    pose_df = load_pose_data("fall_dataset_preprocessed/X_train_fall.csv")
     
     # Choose a mode: 'static', 'animation', 'opencv'
     mode = 'animation'  # Change to 'animation' or 'opencv' as needed

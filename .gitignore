@@ -9,7 +9,7 @@ pose_landmarker.task
 *.sh
 *.csv
 *.avi
-
+*.log
 # STGCN_LSTM/Train_X_openpose.csv
 # STGCN_LSTM/Train_Y_openpose.csv
 # Train_X_fall.csv
@@ -17,3 +17,6 @@ pose_landmarker.task
 test.py
 *.pyc
 STGCN_LSTM/__pycache__/
+figures/
+models/
+fall_dataset_preprocessed/

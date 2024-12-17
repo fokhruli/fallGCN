@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 from sklearn.metrics import precision_score, recall_score, f1_score, average_precision_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-
+import os
 
 
 class SGCN_LSTM(nn.Module):
@@ -141,7 +141,8 @@ class SGCN_LSTM(nn.Module):
 
 class SGCNLSTMTrainer:
     def __init__(self, train_x, train_y, valid_x, valid_y, adj, adj2, adj3, 
-                 lr=0.0001, epochs=200, batch_size=10, device='cuda'):
+                 lr=0.0001, epochs=200, batch_size=10, device='cuda',
+                 save_start_epoch=50):
         self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
         
         # If labels are one-hot encoded, convert to class indices
@@ -150,11 +151,15 @@ class SGCNLSTMTrainer:
         if len(valid_y.shape) > 1 and valid_y.shape[1] > 1:
             valid_y = np.argmax(valid_y, axis=1)
         
+        # Ensure train_y and valid_y are 1D
+        train_y = train_y.flatten()
+        valid_y = valid_y.flatten()
+        
         # Convert data to PyTorch tensors and move to device
         self.train_x = torch.FloatTensor(train_x).to(self.device)
-        self.train_y = torch.LongTensor(train_y).squeeze().to(self.device)  # Ensure 1D
+        self.train_y = torch.LongTensor(train_y).to(self.device)
         self.valid_x = torch.FloatTensor(valid_x).to(self.device)
-        self.valid_y = torch.LongTensor(valid_y).squeeze().to(self.device)  # Ensure 1D
+        self.valid_y = torch.LongTensor(valid_y).to(self.device)
         
         # Print shapes for debugging
         print(f'Train labels shape: {self.train_y.shape}')
@@ -165,14 +170,23 @@ class SGCNLSTMTrainer:
         
         # Calculate class weights for weighted loss
         class_counts = np.bincount(train_y.flatten())
-        class_weights = 1. / class_counts
+        num_classes = 2  # Adjust based on your problem
+        if len(class_counts) < num_classes:
+            class_counts = np.append(class_counts, [0]*(num_classes - len(class_counts)))
+        
+        # Calculate class weights: inverse frequency
+        class_weights = 1. / (class_counts + 1e-6)  # Add epsilon to prevent division by zero
+        class_weights = class_weights / class_weights.sum()  # Normalize to sum to 1
+        
         self.class_weights = torch.FloatTensor(class_weights).to(self.device)
+        print(f'Class weights: {self.class_weights}')
         
         self.criterion = nn.CrossEntropyLoss(weight=self.class_weights)
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
         
         self.epochs = epochs
         self.batch_size = batch_size
+        self.save_start_epoch = save_start_epoch
         
         # Create data loaders
         self.train_dataset = TensorDataset(self.train_x, self.train_y)
@@ -208,7 +222,11 @@ class SGCNLSTMTrainer:
         }
         
         # Initialize a learning rate scheduler
-        scheduler = ReduceLROnPlateau(self.optimizer, mode='max', factor=0.5, patience=10, verbose=True)
+        scheduler = ReduceLROnPlateau(self.optimizer, mode='max', factor=0.5, patience=100, verbose=True)
+
+        # Create a directory to save the best model
+        os.makedirs('models', exist_ok=True)
+        best_model_path = os.path.join('models', 'best_model.pth')
 
         for epoch in range(self.epochs):
             # Training Phase
@@ -253,20 +271,16 @@ class SGCNLSTMTrainer:
             val_targets = torch.cat(val_targets_all)
             val_precision, val_recall, val_f1, val_auprc = self.calculate_metrics(val_outputs, val_targets)
             
-            # Save best model based on AUPRC
-            if val_auprc > best_val_auprc:
+            # Save best model based on validation AUPRC after save_start_epoch
+            if (epoch + 1) >= self.save_start_epoch and val_auprc > best_val_auprc:
                 best_val_auprc = val_auprc
-                torch.save(self.model.state_dict(), 'best_model.pth')
+                torch.save(self.model.state_dict(), best_model_path)
+                print(f'New best model saved at epoch {epoch+1} with AUPRC: {val_auprc:.4f}')
             
             # Step the scheduler
             scheduler.step(val_auprc)
 
-            # Early Stopping Condition (optional)
-            if epoch > 100 and val_auprc < best_val_auprc * 0.99:
-                print("Early stopping triggered")
-                break
-
-            # Logging
+            # Update history
             history['train_loss'].append(train_loss)
             history['val_loss'].append(val_loss)
             history['train_precision'].append(train_precision)
@@ -279,11 +293,11 @@ class SGCNLSTMTrainer:
             history['val_auprc'].append(val_auprc)
             
             print(f'Epoch {epoch+1}/{self.epochs} - '
-                f'Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - '
-                f'Train AUPRC: {train_auprc:.4f} - Val AUPRC: {val_auprc:.4f}')
+                  f'Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - '
+                  f'Train AUPRC: {train_auprc:.4f} - Val AUPRC: {val_auprc:.4f}')
         
+        print(f'Training completed. Best validation AUPRC: {best_val_auprc:.4f}')
         return history
-
 
     def predict(self, x):
         self.model.eval()
@@ -300,4 +314,3 @@ class SGCNLSTMTrainer:
                 predictions.extend(probabilities.cpu().numpy())
         
         return np.array(predictions)
-    

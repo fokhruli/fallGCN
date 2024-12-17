@@ -282,7 +282,7 @@ def calculate_segment_mass(total_mass, segment, gender='male'):
     Returns:
         float: Mass of the specified segment in kg.
     """
-    return total_mass * MASS_RATIOS[gender][segment]
+    return total_mass * MASS_RATIOS[segment] #MASS_RATIOS[gender][segment]
 
 def extract_biomechanical_features(coords, total_mass, gender='male'):
     """
@@ -399,13 +399,14 @@ def extract_biomechanical_features(coords, total_mass, gender='male'):
     features['foot_left_angle'] = foot_l
     features['foot_right_angle'] = foot_r
     
-    # 6. Body Segment Masses (8 features)
-    # Calculate mass for each body segment
-    segments = ['head', 'trunk', 'upper_arm', 'forearm', 'hand', 'thigh', 'shank', 'foot']
-    for segment in segments:
-        mass = calculate_segment_mass(total_mass, segment, gender)
-        features[f'{segment}_mass'] = mass
-    
+    # # 6. Body Segment Masses (8 features)
+    # # Calculate mass for each body segment
+    # segments = ['head', 'trunk', 'upper_arm', 'forearm', 'hand', 'thigh', 'shank', 'foot']
+    # for segment in segments:
+    #     mass = calculate_segment_mass(total_mass, segment, gender)
+    #     features[f'{segment}_mass'] = mass
+
+    print(f"Total frature shapes? Ans: {len(features.values())}")
     return features
 
 def process_csv(input_csv, output_csv, total_mass=70.0, gender='male'):
@@ -421,12 +422,13 @@ def process_csv(input_csv, output_csv, total_mass=70.0, gender='male'):
     # Load data
     df = load_landmark_data(input_csv)
     num_frames = df.shape[0]
-    print(f"Processing {num_frames} frames...")
+    print(f"Processing {num_frames} frames... ")
     
     # Initialize list to hold features for each frame
     features_list = []
-    
+    count_frame = 0
     for index, row in df.iterrows():
+        print(f"Frame number {count_frame} processing right now")
         coords = extract_landmarks(row)
         
         # Handle cases where certain landmarks might be missing or have NaN values
@@ -438,18 +440,19 @@ def process_csv(input_csv, output_csv, total_mass=70.0, gender='male'):
         # Extract biomechanical features
         features = extract_biomechanical_features(coords, total_mass, gender)
         features_list.append(features)
+        count_frame = count_frame + 1
     
     # Create DataFrame from features
-    features_df = pd.DataFrame(features_list, columns=FEATURE_NAMES + [f'{seg}_mass' for seg in ['head', 'trunk', 'upper_arm', 'forearm', 'hand', 'thigh', 'shank', 'foot']])
+    features_df = pd.DataFrame(features_list, columns=FEATURE_NAMES) # + [f'{seg}_mass' for seg in ['head', 'trunk', 'upper_arm', 'forearm', 'hand', 'thigh', 'shank', 'foot']]
     
     # Save to CSV
-    features_df.to_csv(output_csv, index=False)
+    features_df.to_csv(output_csv, index=False, header=None)
     print(f"Features saved to {output_csv}")
 
 # Example usage
 if __name__ == "__main__":
-    input_csv_path = 'pose_landmarks.csv'          # Replace with your input CSV file path
-    output_csv_path = 'biomechanical_features.csv' # Desired output CSV file path
+    input_csv_path = 'fall_dataset_preprocessed/X_train_fall.csv'          # Replace with your input CSV file path
+    output_csv_path = 'fall_dataset_preprocessed/X_train_fall_biomechanical_features.csv' # Desired output CSV file path
     total_body_mass = 70.0  # Example total body mass in kg
     gender = 'male'          # 'male' or 'female'
     

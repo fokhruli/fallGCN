@@ -11,19 +11,36 @@ from graph import Graph
 from stgcn import SGCN_LSTM, SGCNLSTMTrainer
 import pdb
 import os
-
-
+import logging
+import sys
 
 # Set random seed for reproducibility
 RANDOM_SEED = 42
 torch.manual_seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
 
+# Configure logging
+log_dir = 'logs'
+os.makedirs(log_dir, exist_ok=True)
+log_filename = 'training.log'
+log_path = os.path.join(log_dir, log_filename)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_path),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+
 # Check GPU availability
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 if device.type == 'cuda':
-    print(f'Found GPU at: {torch.cuda.get_device_name(0)}')
+    gpu_name = torch.cuda.get_device_name(0)
+    logging.info(f'Found GPU: {gpu_name}')
 else:
+    logging.critical('GPU device not found. Exiting.')
     raise SystemError('GPU device not found')
 
 # Load and prepare data
@@ -39,15 +56,17 @@ train_x, valid_x, train_y, valid_y = train_test_split(
     stratify=data_loader.scaled_y  # Ensures balanced splits
 )
 
+# Debugging breakpoint (optional)
 # pdb.set_trace()
-print("Training instances: ", len(train_x))
-print("Validation instances: ", len(valid_x))
+
+logging.info(f"Training instances: {len(train_x)}")
+logging.info(f"Validation instances: {len(valid_x)}")
 
 # Check class distribution
 unique, counts = np.unique(train_y, return_counts=True)
-print(f"Training class distribution: {dict(zip(unique, counts))}")
+logging.info(f"Training class distribution: {dict(zip(unique, counts))}")
 unique, counts = np.unique(valid_y, return_counts=True)
-print(f"Validation class distribution: {dict(zip(unique, counts))}")
+logging.info(f"Validation class distribution: {dict(zip(unique, counts))}")
 
 # Initialize trainer with device
 trainer = SGCNLSTMTrainer(
@@ -58,28 +77,28 @@ trainer = SGCNLSTMTrainer(
     adj=graph.AD,
     adj2=graph.AD2,
     adj3=graph.AD3,
-    lr=0.0001,
-    epochs=3000,
+    lr=0.0001, #0.0001,
+    epochs=1000,
     batch_size=32,
     device=device.type
 )
 
 # Build and print model summary
-print("Model Architecture:")
-print(trainer.model)
+logging.info("Model Architecture:")
+logging.info(trainer.model)
 total_params = sum(p.numel() for p in trainer.model.parameters() if p.requires_grad)
-print(f"Total trainable parameters: {total_params}")
+logging.info(f"Total trainable parameters: {total_params}")
 
-# Train the model
+# Train the modelfigures
 history = trainer.train()
 
 # # Load pre-trained weights if they exist
 # try:
 #     trainer.model.load_state_dict(torch.load("best_model.pth"))
 #     trainer.model.to(trainer.device)
-#     print("Loaded pre-trained weights successfully")
+#     logging.info("Loaded pre-trained weights successfully")
 # except FileNotFoundError:
-#     print("No pre-trained weights found. Proceeding without loading.")
+#     logging.warning("No pre-trained weights found. Proceeding without loading.")
 
 # Make predictions
 y_pred_prob = trainer.predict(valid_x)
@@ -93,10 +112,10 @@ recall = recall_score(valid_y, y_pred, zero_division=0)
 f1 = f1_score(valid_y, y_pred, zero_division=0)
 auprc = average_precision_score(valid_y, y_pred_prob)
 
-print(f'Precision: {precision:.4f}')
-print(f'Recall: {recall:.4f}')
-print(f'F1-score: {f1:.4f}')
-print(f'AUPRC: {auprc:.4f}')
+logging.info(f'Precision: {precision:.4f}')
+logging.info(f'Recall: {recall:.4f}')
+logging.info(f'F1-score: {f1:.4f}')
+logging.info(f'AUPRC: {auprc:.4f}')
 
 def save_and_show(fig_dir, filename, dpi=300):
     plt.savefig(os.path.join(fig_dir, filename), dpi=dpi, bbox_inches='tight')
