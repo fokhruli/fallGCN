@@ -5,12 +5,13 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import requests
 
+
 def download_model():
     """Download the pose landmarker model if it doesn't exist."""
     model_path = 'pose_landmarker.task'
     if not os.path.exists(model_path):
         print("Downloading pose landmarker model...")
-        url = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task"
+        url = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task" #"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task"
         response = requests.get(url)
         with open(model_path, 'wb') as f:
             f.write(response.content)

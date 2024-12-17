@@ -6,3 +6,28 @@ Use our existing code:
  - use out model for training. change model output, loss optimizing based on given informations.
  - now add  biomechanical features with existing framework and train fusion models and calculate results.
 
+
+what I understand:
+
+In the context of the fall prediction algorithm, the output layer is responsible for predicting the probability of a 
+fall occurring at each timestep. The time horizon mentioned, "up to 2 seconds ahead," refers to the algorithm's ability
+to predict a potential fall before it actually happens.
+
+Here's what it means:
+
+1. The algorithm processes the pose data and biomechanical features using a sliding window approach, where each window represents
+ a short segment of time (e.g., 3 seconds).
+
+2. At each timestep (e.g., every 0.5 seconds), the algorithm predicts the probability of a fall occurring within the next 2 seconds
+based on the current and previous data points.
+
+3. For example, if the current timestep is at t=0, the algorithm predicts the fall probability for the next 2 seconds (t=0 to t=2). 
+At the next timestep (t=0.5), it predicts the fall probability for t=0.5 to t=2.5, and so on.
+
+4. The time horizon of 2 seconds means that the algorithm is designed to provide an early warning of a potential fall up to 2 seconds before it happens. 
+This gives the system or caregiver a short window of time to take preventive measures or provide assistance.
+
+5. The statement "ideally we want to increase" suggests that the goal is to extend the time horizon beyond 2 seconds in the future. A longer time horizon 
+would provide more advanced warning and allow for earlier interventions. However, increasing the time horizon may also make the predictions less accurate, 
+as it requires the algorithm to anticipate falls further into the future based on the available data.
+
