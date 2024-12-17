@@ -14,4 +14,6 @@ pose_landmarker.task
 # STGCN_LSTM/Train_Y_openpose.csv
 # Train_X_fall.csv
 # Train_y_fall.csv
-test.pys
+test.py
+*.pyc
+STGCN_LSTM/__pycache__/
