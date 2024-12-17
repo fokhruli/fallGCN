@@ -8,6 +8,8 @@ pose_landmarker.task
 *.txt
 *.sh
 *.csv
+*.avi
+
 # STGCN_LSTM/Train_X_openpose.csv
 # STGCN_LSTM/Train_Y_openpose.csv
 # Train_X_fall.csv

@@ -33,11 +33,38 @@
 #     print(f"FPS?: {total_frames/total_duration_sec}")
 
 import pandas as pd
-
 import numpy as np
 
-data_x = pd.read_csv("Train_X_fall.csv", header=None)
-data_y = pd.read_csv("Train_y_fall.csv", header=None)
+# Load the data
+data_x = pd.read_csv("X_train_fall_90.csv", header=None)
+data_y = pd.read_csv("y_train_fall_90.csv", header=None)
+
+# Get total rows
+total_rows_x = len(data_x)
+total_rows_y = len(data_y)
 
 print(data_x.head(1))
-print(data_y[0])
+
+print(f"Total rows in X_train_fall_90: {total_rows_x}")
+print(f"Total rows in y_train_fall_90: {total_rows_y}")
+
+# Check if they match
+if total_rows_x == total_rows_y:
+    print("\nX and y have matching number of rows!")
+    
+    # Calculate how many rows per window (90 frames)
+    num_windows = total_rows_x // 90
+    print(f"\nTotal number of windows: {num_windows}")
+    print(f"Each window has 90 frames")
+    
+    # Show example of first window
+    print("\nFirst window ranges:")
+    print(f"Rows 0-89: Window 1")
+    print(f"Rows 90-179: Window 2")
+    print(f"And so on...")
+    
+    # Show a few labels from first window
+    print("\nLabels in first window (should all be the same):")
+    print(data_y[0:90])
+else:
+    print("\nWARNING: X and y have different numbers of rows!")
