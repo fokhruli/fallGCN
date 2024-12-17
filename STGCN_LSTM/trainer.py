@@ -1,14 +1,18 @@
 import numpy as np
 import torch
-import torch.cuda
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from math import sqrt
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import (
+    precision_score, recall_score, f1_score, average_precision_score,
+    confusion_matrix, ConfusionMatrixDisplay, roc_curve, auc, precision_recall_curve
+)
 from data_processing import Data_Loader
 from graph import Graph
 from stgcn import SGCN_LSTM, SGCNLSTMTrainer
+import pdb
+import os
+
+
 
 # Set random seed for reproducibility
 RANDOM_SEED = 42
@@ -26,17 +30,24 @@ else:
 data_loader = Data_Loader()
 graph = Graph(len(data_loader.body_part))
 
-# Split data
+# Split data into training and validation sets with stratification
 train_x, valid_x, train_y, valid_y = train_test_split(
     data_loader.scaled_x, 
     data_loader.scaled_y, 
     test_size=0.2, 
-    random_state=RANDOM_SEED
+    random_state=RANDOM_SEED,
+    stratify=data_loader.scaled_y  # Ensures balanced splits
 )
 
+# pdb.set_trace()
 print("Training instances: ", len(train_x))
 print("Validation instances: ", len(valid_x))
 
+# Check class distribution
+unique, counts = np.unique(train_y, return_counts=True)
+print(f"Training class distribution: {dict(zip(unique, counts))}")
+unique, counts = np.unique(valid_y, return_counts=True)
+print(f"Validation class distribution: {dict(zip(unique, counts))}")
 
 # Initialize trainer with device
 trainer = SGCNLSTMTrainer(
@@ -49,59 +60,101 @@ trainer = SGCNLSTMTrainer(
     adj3=graph.AD3,
     lr=0.0001,
     epochs=3000,
-    batch_size=32
+    batch_size=32,
+    device=device.type
 )
-
-
 
 # Build and print model summary
 print("Model Architecture:")
 print(trainer.model)
-total_params = sum(p.numel() for p in trainer.model.parameters())
-print(f"Total parameters: {total_params}")
+total_params = sum(p.numel() for p in trainer.model.parameters() if p.requires_grad)
+print(f"Total trainable parameters: {total_params}")
 
 # Train the model
 history = trainer.train()
 
-# Load pre-trained weights if they exist
-try:
-    trainer.model.load_state_dict(torch.load("best_model.pt"))
-    print("Loaded pre-trained weights successfully")
-except FileNotFoundError:
-    print("No pre-trained weights found")
+# # Load pre-trained weights if they exist
+# try:
+#     trainer.model.load_state_dict(torch.load("best_model.pth"))
+#     trainer.model.to(trainer.device)
+#     print("Loaded pre-trained weights successfully")
+# except FileNotFoundError:
+#     print("No pre-trained weights found. Proceeding without loading.")
 
 # Make predictions
-y_pred = trainer.predict(valid_x)
+y_pred_prob = trainer.predict(valid_x)
 
-# Inverse transform predictions and actual values
-y_pred = data_loader.sc2.inverse_transform(y_pred)
-valid_y = data_loader.sc2.inverse_transform(valid_y)
+# Convert probabilities to binary predictions (threshold = 0.5)
+y_pred = (y_pred_prob >= 0.5).astype(int)
 
-# Plotting
-plt.figure(figsize=(8, 8))
-plt.subplot(2, 1, 1)
-plt.plot(y_pred, 's', color='red', label='Prediction', linestyle='None', alpha=0.5, markersize=6)
-plt.plot(valid_y, 'o', color='green', label='Actual Score', alpha=0.4, markersize=6)
-plt.title('Validation Set', fontsize=18)
-plt.xlabel('Sequence Number', fontsize=16)
-plt.ylabel('Score', fontsize=16)
+# Evaluation Metrics
+precision = precision_score(valid_y, y_pred, zero_division=0)
+recall = recall_score(valid_y, y_pred, zero_division=0)
+f1 = f1_score(valid_y, y_pred, zero_division=0)
+auprc = average_precision_score(valid_y, y_pred_prob)
+
+print(f'Precision: {precision:.4f}')
+print(f'Recall: {recall:.4f}')
+print(f'F1-score: {f1:.4f}')
+print(f'AUPRC: {auprc:.4f}')
+
+def save_and_show(fig_dir, filename, dpi=300):
+    plt.savefig(os.path.join(fig_dir, filename), dpi=dpi, bbox_inches='tight')
+    plt.show()
+
+# Create figures directory
+fig_dir = 'figures'
+os.makedirs(fig_dir, exist_ok=True)
+
+# Confusion Matrix
+cm = confusion_matrix(valid_y, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Non-Fall', 'Fall'])
+disp.plot(cmap=plt.cm.Blues)
+plt.title('Confusion Matrix')
+save_and_show(fig_dir, 'confusion_matrix.png')
+
+# Precision-Recall Curve
+precision_vals, recall_vals, _ = precision_recall_curve(valid_y, y_pred_prob)
+plt.figure(figsize=(8, 6))
+plt.plot(recall_vals, precision_vals, label=f'AUPRC = {auprc:.4f}')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
 plt.legend()
+plt.grid(True)
+save_and_show(fig_dir, 'precision_recall_curve.png')
 
-# Evaluation metrics
-def mean_absolute_percentage_error(y_true, y_pred):
-    y_true, y_pred = np.array(y_true), np.array(y_pred)
-    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+# ROC Curve
+fpr, tpr, thresholds = roc_curve(valid_y, y_pred_prob)
+roc_auc = auc(fpr, tpr)
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {roc_auc:.4f})')
+plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend()
+plt.grid(True)
+save_and_show(fig_dir, 'roc_curve.png')
 
-test_dev = np.abs(valid_y - y_pred)
-mean_abs_dev = np.mean(test_dev)
-mae = mean_absolute_error(valid_y, y_pred)
-rms_dev = sqrt(mean_squared_error(y_pred, valid_y))
-mse = mean_squared_error(valid_y, y_pred)
-mape = mean_absolute_percentage_error(valid_y, y_pred)
+# Plot AUPRC over epochs
+plt.figure(figsize=(10, 5))
+plt.plot(history['train_auprc'], label='Train AUPRC')
+plt.plot(history['val_auprc'], label='Validation AUPRC')
+plt.xlabel('Epoch')
+plt.ylabel('AUPRC')
+plt.title('AUPRC over Epochs')
+plt.legend()
+plt.grid(True)
+save_and_show(fig_dir, 'auprc_over_epochs.png')
 
-print('Mean absolute error:', mae)
-print('RMS deviation:', rms_dev)
-print('MSE:', mse)
-print('MAPE:', mape)
-
-plt.show()
+# Plot Loss over epochs
+plt.figure(figsize=(10, 5))
+plt.plot(history['train_loss'], label='Train Loss')
+plt.plot(history['val_loss'], label='Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss over Epochs')
+plt.legend()
+plt.grid(True)
+save_and_show(fig_dir, 'loss_over_epochs.png')

@@ -43,28 +43,39 @@ data_y = pd.read_csv("y_train_fall_90.csv", header=None)
 total_rows_x = len(data_x)
 total_rows_y = len(data_y)
 
-print(data_x.head(1))
+print(data_x.head(6))
+print(data_y.head(5))
 
 print(f"Total rows in X_train_fall_90: {total_rows_x}")
 print(f"Total rows in y_train_fall_90: {total_rows_y}")
 
 # Check if they match
-if total_rows_x == total_rows_y:
-    print("\nX and y have matching number of rows!")
+print(f"window size: {total_rows_x/total_rows_y}")
+
+
+
+# Use value_counts to count occurrences of each unique value
+counts = data_y[0].value_counts()
+
+# Display the counts
+print(counts)
+
+
+
+#         columns = []
+#     for i in range(33):  # 33 landmarks
+#         columns.extend([f'landmark{i}_x', f'landmark{i}_y', f'landmark{i}_z'])
     
-    # Calculate how many rows per window (90 frames)
-    num_windows = total_rows_x // 90
-    print(f"\nTotal number of windows: {num_windows}")
-    print(f"Each window has 90 frames")
+#     print("\nSaving data to CSV files...")
+#     # Save to CSV with proper column names
+#     # X_df = pd.DataFrame(X_data, columns=None)
+# # Create DataFrame and save without headers
+#     X_df = pd.DataFrame(X_data)
+#     X_df.to_csv(output_x, index=False, header=False)
+#     y_df = pd.DataFrame(y_data, columns=None)
     
-    # Show example of first window
-    print("\nFirst window ranges:")
-    print(f"Rows 0-89: Window 1")
-    print(f"Rows 90-179: Window 2")
-    print(f"And so on...")
-    
-    # Show a few labels from first window
-    print("\nLabels in first window (should all be the same):")
-    print(data_y[0:90])
-else:
-    print("\nWARNING: X and y have different numbers of rows!")
+#     # X_df.to_csv(output_x, index=False)
+
+#     y_df.to_csv(output_y, index=False)
+#     print(f"Data saved to {output_x} and {output_y}")
+#     print(f"X shape: {X_df.shape}, y shape: {y_df.shape}")

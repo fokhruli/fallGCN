@@ -30,11 +30,19 @@ def read_landmarks_file(file_path):
     print(f"Total frames read: {frame_count}")        
     return landmarks_data
 
-def check_continuous_frames(frames):
-    """Check if there are any gaps of 5 or more continuous frames."""
-    frames = sorted(frames)
+def check_continuous_frames(frames, max_gap=4):
+    """
+    Check if there are any gaps greater than max_gap between consecutive frames.
+    
+    Args:
+        frames (list): Sorted list of frame numbers.
+        max_gap (int): Maximum allowed gap between consecutive frames.
+        
+    Returns:
+        bool: True if no gap exceeds max_gap, False otherwise.
+    """
     for i in range(len(frames)-1):
-        if frames[i+1] - frames[i] >= 5:
+        if frames[i+1] - frames[i] > max_gap:
             return False
     return True
 
@@ -42,14 +50,15 @@ def create_window_data(landmarks_data, start_frame, window_size=90):
     """Create a single window of data if all frames are available."""
     frames = list(range(start_frame, start_frame + window_size))
     
-    # Check if all frames exist and are continuous
+    # Check if all frames exist
     all_frames_exist = all(frame in landmarks_data for frame in frames)
     if not all_frames_exist:
         print(f"  Skipping window at frame {start_frame}: Missing frames")
         return None
         
+    # Check for continuity within the window
     if not check_continuous_frames(frames):
-        print(f"  Skipping window at frame {start_frame}: Gap of 5+ frames detected")
+        print(f"  Skipping window at frame {start_frame}: Gap detected within window")
         return None
         
     # Create feature vector for the window
@@ -62,25 +71,52 @@ def create_window_data(landmarks_data, start_frame, window_size=90):
         
     return window_data
 
-def get_label_for_window(labels_df, chute, cam, start_frame, next_frames=60):
-    """Get the label for the next 60 frames after the window."""
-    window_end = start_frame + 90  # Current window end
+def get_label_for_window(labels_df, chute, cam, window_end_frame, label_duration=60):
+    """
+    Get the label for the next 'label_duration' frames after the window end.
+    
+    Args:
+        labels_df (pd.DataFrame): DataFrame containing labels.
+        chute (int): Chute number.
+        cam (int): Camera number.
+        window_end_frame (int): The frame number where the window ends.
+        label_duration (int): Number of frames to consider for labeling after window end.
+        
+    Returns:
+        int or None: Majority label for the label window, or None if no label found.
+    """
+    label_start = window_end_frame
+    label_end = window_end_frame + label_duration
+    
     label_range = labels_df[
         (labels_df['chute'] == chute) & 
         (labels_df['cam'] == cam) &
-        (labels_df['start'] <= window_end + next_frames) &
-        (labels_df['end'] >= window_end)
+        (labels_df['start'] <= label_end) &
+        (labels_df['end'] >= label_start)
     ]
     
-    if len(label_range) == 0:
-        print(f"  No label found for window at frame {start_frame}")
+    if label_range.empty:
+        print(f"  No label found for window ending at frame {window_end_frame}")
         return None
         
-    # Return the majority label for the next 60 frames
+    # Assuming labels do not overlap, return the first label found
     return label_range.iloc[0]['label']
 
-def process_data(data_dir, labels_file, output_x, output_y, start_chute=1, end_chute=1, window_size=90):
-    """Process data files for specified chute range and create training datasets."""
+def process_data(data_dir, labels_file, output_x, output_y, start_chute=1, end_chute=1, window_size=90, stride=15, label_duration=60):
+    """
+    Process data files for specified chute range and create training datasets with sliding windows.
+    
+    Args:
+        data_dir (str): Directory containing the data.
+        labels_file (str): Path to the labels CSV file.
+        output_x (str): Output path for X data CSV.
+        output_y (str): Output path for y data CSV.
+        start_chute (int): Starting chute number.
+        end_chute (int): Ending chute number.
+        window_size (int): Number of frames per window.
+        stride (int): Number of frames to slide the window each step.
+        label_duration (int): Number of frames to consider for labeling after window end.
+    """
     print(f"Starting data processing...")
     print(f"Processing chutes {start_chute} to {end_chute}")
     print(f"Reading labels from: {labels_file}")
@@ -144,18 +180,19 @@ def process_data(data_dir, labels_file, output_x, output_y, start_chute=1, end_c
         print(f"Processing frames {valid_frames[0]} to {valid_frames[-1]}")
         print(f"Total valid frames: {len(valid_frames)}")
         
-        # Process each possible window within the valid frame range
+        # Process each possible window within the valid frame range with specified stride
         windows_saved = 0
-        for start_frame in valid_frames[:-window_size]:
+        for start_frame in range(valid_frames[0], valid_frames[-1] - window_size - label_duration + 1, stride):
             total_windows_processed += 1
             window_data = create_window_data(landmarks_data, start_frame, window_size)
             if window_data is None:
                 continue
                 
-            label = get_label_for_window(chute_labels, chute, cam, start_frame)
+            window_end_frame = start_frame + window_size
+            label = get_label_for_window(chute_labels, chute, cam, window_end_frame, label_duration)
             if label is not None:
                 X_data.extend(window_data)
-                y_data.extend([label] * window_size)
+                y_data.append(label)  # Append label once per window
                 windows_saved += 1
                 total_windows_saved += 1
         
@@ -170,24 +207,27 @@ def process_data(data_dir, labels_file, output_x, output_y, start_chute=1, end_c
         print("No data to save. Exiting.")
         return
     
+    # Save to CSV with proper column names
+    print("\nSaving data to CSV files...")
     # Create column names for X data
     columns = []
     for i in range(33):  # 33 landmarks
         columns.extend([f'landmark{i}_x', f'landmark{i}_y', f'landmark{i}_z'])
     
-    print("\nSaving data to CSV files...")
-    # Save to CSV with proper column names
-    # X_df = pd.DataFrame(X_data, columns=None)
-# Create DataFrame and save without headers
+
+
+
+    # Create DataFrame and save without headers
     X_df = pd.DataFrame(X_data)
     X_df.to_csv(output_x, index=False, header=False)
-    y_df = pd.DataFrame(y_data, columns=None)
+    y_df = pd.DataFrame(y_data)
     
     # X_df.to_csv(output_x, index=False)
 
-    y_df.to_csv(output_y, index=False)
+    y_df.to_csv(output_y, index=False, header=False)
     print(f"Data saved to {output_x} and {output_y}")
     print(f"X shape: {X_df.shape}, y shape: {y_df.shape}")
+
 
 # Example usage
 if __name__ == "__main__":
@@ -198,7 +238,12 @@ if __name__ == "__main__":
     
     # Process only chute 1 (can be modified to process more chutes)
     START_CHUTE = 1
-    END_CHUTE = 1  # Change this to process more chutes (up to 24)
+    END_CHUTE = 24  # Change this to process more chutes (up to 24)
+    
+    # Define window parameters
+    WINDOW_SIZE = 90
+    STRIDE = 15
+    LABEL_DURATION = 60
     
     process_data(
         data_dir=data_dir,
@@ -206,5 +251,8 @@ if __name__ == "__main__":
         output_x=output_x,
         output_y=output_y,
         start_chute=START_CHUTE,
-        end_chute=END_CHUTE
+        end_chute=END_CHUTE,
+        window_size=WINDOW_SIZE,
+        stride=STRIDE,
+        label_duration=LABEL_DURATION
     )
