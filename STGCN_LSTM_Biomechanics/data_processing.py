@@ -67,7 +67,7 @@ class Data_Loader():
     def import_dataset(self):
         # Load features and labels from CSV files
         train_x = pd.read_csv("/home/rmedu/Fokhrul/fallGCN/fall_dataset_preprocessed/X_train_fall.csv", header=None).values
-        train_biomech = pd.read_csv("/home/rmedu/Fokhrul/fallGCN/fall_dataset_preprocessed/X_train_fall_biomechanical_features_v0.csv", header=None).values
+        train_biomech = pd.read_csv("/home/rmedu/Fokhrul/fallGCN/fall_dataset_preprocessed/X_train_fall_biomechanical_features.csv", header=None).values
         train_y = pd.read_csv("/home/rmedu/Fokhrul/fallGCN/fall_dataset_preprocessed/y_train_fall.csv", header=None).values
         return train_x, train_biomech, train_y
             
