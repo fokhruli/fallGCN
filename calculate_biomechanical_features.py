@@ -53,46 +53,54 @@ MASS_RATIOS = {
 
 # Define the features to calculate
 FEATURE_NAMES = [
-    # Body Segment Angles (9 features)
-    'trunk_angle',
-    'upper_arm_left_angle',
-    'upper_arm_right_angle',
-    'forearm_left_angle',
-    'forearm_right_angle',
-    'thigh_left_angle',
-    'thigh_right_angle',
-    'shank_left_angle',
-    'shank_right_angle',
+    # Body Segment Angles (27 features)
+    'trunk_flex_ext_angle',
+    'trunk_abd_add_angle',
+    'trunk_rot_angle',
     
-    # Centroid Locations (9 features)
-    'C_upper_x', 'C_upper_y', 'C_upper_z',
-    'C_lower_x', 'C_lower_y', 'C_lower_z',
-    'C_total_x', 'C_total_y', 'C_total_z',
+    'upper_arm_left_flex_ext_angle',
+    'upper_arm_left_abd_add_angle',
+    'upper_arm_left_rot_angle',
+    'upper_arm_right_flex_ext_angle',
+    'upper_arm_right_abd_add_angle',
+    'upper_arm_right_rot_angle',
     
-    # Yaw Trunk Angle (1 feature)
-    'yaw_trunk_angle',
+    'forearm_left_flex_ext_angle',
+    'forearm_left_abd_add_angle',
+    'forearm_left_rot_angle',
+    'forearm_right_flex_ext_angle',
+    'forearm_right_abd_add_angle',
+    'forearm_right_rot_angle',
     
-    # Hip and Shoulder Coordinates (12 features)
-    'left_hip_x', 'left_hip_y', 'left_hip_z',
-    'right_hip_x', 'right_hip_y', 'right_hip_z',
-    'left_shoulder_x', 'left_shoulder_y', 'left_shoulder_z',
-    'right_shoulder_x', 'right_shoulder_y', 'right_shoulder_z',
+    'thigh_left_flex_ext_angle',
+    'thigh_left_abd_add_angle',
+    'thigh_left_rot_angle',
+    'thigh_right_flex_ext_angle',
+    'thigh_right_abd_add_angle',
+    'thigh_right_rot_angle',
     
-    # Joint Angles (14 features)
-    'elbow_left_angle',
-    'elbow_right_angle',
-    'shoulder_left_angle',
-    'shoulder_right_angle',
-    'hip_left_angle',
-    'hip_right_angle',
-    'knee_left_angle',
-    'knee_right_angle',
-    'ankle_left_angle',
-    'ankle_right_angle',
-    'wrist_left_angle',
-    'wrist_right_angle',
-    'foot_left_angle',
-    'foot_right_angle'
+    'shank_left_flex_ext_angle',
+    'shank_left_abd_add_angle',
+    'shank_left_rot_angle',
+    'shank_right_flex_ext_angle',
+    'shank_right_abd_add_angle',
+    'shank_right_rot_angle',
+    
+    # Centroid Locations (3 features)
+    'C_upper',
+    'C_lower',
+    'C_total',
+    
+    # Hip and Shoulder Coordinates (14 features)
+    'left_hip_x', 'left_hip_y',
+    'right_hip_x', 'right_hip_y',
+    'left_shoulder_x', 'left_shoulder_y',
+    'right_shoulder_x', 'right_shoulder_y',
+    'left_elbow_x', 'left_elbow_y',
+    'right_elbow_x', 'right_elbow_y',
+    'left_knee_x', 'left_knee_y',
+    
+    # Note: Yaw Trunk Angle is included as 'trunk_rot_angle'
 ]
 
 def load_landmark_data(csv_file):
@@ -151,19 +159,19 @@ def calculate_joint_angle(p1, p2, p3):
     angle = np.arccos(cos_angle)
     return np.degrees(angle)
 
-def calculate_segment_angle(point1, point2, vertical=np.array([0, 1, 0])):
+def calculate_segment_angle(p1, p2, vertical=np.array([0, 1, 0])):
     """
     Calculate the angle between a body segment and the vertical axis.
     
     Args:
-        point1 (np.array): Starting point of the segment.
-        point2 (np.array): Ending point of the segment.
+        p1 (np.array): Starting point of the segment.
+        p2 (np.array): Ending point of the segment.
         vertical (np.array): Vertical axis vector.
     
     Returns:
         float: Angle in degrees.
     """
-    segment = point2 - point1
+    segment = p2 - p1
     norm_segment = np.linalg.norm(segment)
     norm_vertical = np.linalg.norm(vertical)
     if norm_segment == 0 or norm_vertical == 0:
@@ -235,14 +243,14 @@ def find_waist_point(coords, alpha=0.5):
 
 def calculate_centroids(coords, waist_point):
     """
-    Calculate upper body, lower body, and total body centroids.
+    Calculate upper body, lower body, and total body centroids as distances from the waist point.
     
     Args:
         coords (dict): Dictionary of landmark coordinates.
         waist_point (np.array): Coordinates of the waist point.
     
     Returns:
-        dict: Dictionary containing centroids.
+        dict: Dictionary containing centroid distances.
     """
     # Upper Body Centroid
     upper_points = [
@@ -251,6 +259,7 @@ def calculate_centroids(coords, waist_point):
         coords['left_wrist'], coords['right_wrist']
     ]
     C_upper = calculate_centroid(upper_points)
+    distance_upper = np.linalg.norm(C_upper - waist_point)
     
     # Lower Body Centroid
     lower_points = [
@@ -259,15 +268,17 @@ def calculate_centroids(coords, waist_point):
         coords['left_ankle'], coords['right_ankle']
     ]
     C_lower = calculate_centroid(lower_points)
+    distance_lower = np.linalg.norm(C_lower - waist_point)
     
     # Total Body Centroid
     all_points = list(coords.values())
     C_total = calculate_centroid(all_points)
+    distance_total = np.linalg.norm(C_total - waist_point)
     
     return {
-        'C_upper': C_upper,
-        'C_lower': C_lower,
-        'C_total': C_total
+        'C_upper': distance_upper,
+        'C_lower': distance_lower,
+        'C_total': distance_total
     }
 
 def calculate_segment_mass(total_mass, segment, gender='male'):
@@ -282,7 +293,7 @@ def calculate_segment_mass(total_mass, segment, gender='male'):
     Returns:
         float: Mass of the specified segment in kg.
     """
-    return total_mass * MASS_RATIOS[segment] #MASS_RATIOS[gender][segment]
+    return total_mass * MASS_RATIOS[segment] # MASS_RATIOS[gender][segment]
 
 def extract_biomechanical_features(coords, total_mass, gender='male'):
     """
@@ -298,115 +309,112 @@ def extract_biomechanical_features(coords, total_mass, gender='male'):
     """
     features = {}
     
-    # 1. Body Segment Angles (9 features)
-    # a. Trunk angle: angle between spine vector and vertical axis
+    # 1. Body Segment Angles (27 features)
+    # a. Trunk Angles
     hip_center = (coords['left_hip'] + coords['right_hip']) / 2
     shoulder_center = (coords['left_shoulder'] + coords['right_shoulder']) / 2
     spine_vector = shoulder_center - hip_center
-    trunk_angle = calculate_segment_angle(hip_center, shoulder_center)
-    features['trunk_angle'] = trunk_angle
     
-    # b. Upper arm angles (left and right)
-    upper_arm_l = calculate_segment_angle(coords['left_shoulder'], coords['left_elbow'])
-    upper_arm_r = calculate_segment_angle(coords['right_shoulder'], coords['right_elbow'])
-    features['upper_arm_left_angle'] = upper_arm_l
-    features['upper_arm_right_angle'] = upper_arm_r
+    trunk_flex_ext = calculate_segment_angle(hip_center, shoulder_center)
+    trunk_abd_add = calculate_segment_angle(shoulder_center, hip_center)  # Example
+    trunk_rot = calculate_yaw_angle(coords['left_shoulder'], coords['right_shoulder'])
+    features['trunk_flex_ext_angle'] = trunk_flex_ext
+    features['trunk_abd_add_angle'] = trunk_abd_add
+    features['trunk_rot_angle'] = trunk_rot
     
-    # c. Forearm angles (left and right)
-    forearm_l = calculate_segment_angle(coords['left_elbow'], coords['left_wrist'])
-    forearm_r = calculate_segment_angle(coords['right_elbow'], coords['right_wrist'])
-    features['forearm_left_angle'] = forearm_l
-    features['forearm_right_angle'] = forearm_r
+    # b. Upper Arm Angles (Left and Right)
+    for side in ['left', 'right']:
+        shoulder = coords[f'{side}_shoulder']
+        elbow = coords[f'{side}_elbow']
+        wrist = coords[f'{side}_wrist']
+        
+        # Flexion/Extension
+        flex_ext = calculate_joint_angle(shoulder, elbow, wrist)
+        # Abduction/Adduction
+        abd_add = calculate_segment_angle(shoulder, elbow)
+        # Rotation
+        rot = calculate_segment_angle(elbow, wrist)
+        
+        features[f'upper_arm_{side}_flex_ext_angle'] = flex_ext
+        features[f'upper_arm_{side}_abd_add_angle'] = abd_add
+        features[f'upper_arm_{side}_rot_angle'] = rot
     
-    # d. Thigh angles (left and right)
-    thigh_l = calculate_segment_angle(coords['left_hip'], coords['left_knee'])
-    thigh_r = calculate_segment_angle(coords['right_hip'], coords['right_knee'])
-    features['thigh_left_angle'] = thigh_l
-    features['thigh_right_angle'] = thigh_r
+    # c. Forearm Angles (Left and Right)
+    for side in ['left', 'right']:
+        elbow = coords[f'{side}_elbow']
+        wrist = coords[f'{side}_wrist']
+        pinky = coords[f'{side}_pinky']
+        
+        # Flexion/Extension
+        flex_ext = calculate_joint_angle(coords[f'{side}_elbow'], coords[f'{side}_wrist'], coords[f'{side}_pinky'])
+        # Abduction/Adduction
+        abd_add = calculate_segment_angle(coords[f'{side}_elbow'], coords[f'{side}_wrist'])
+        # Rotation
+        rot = calculate_segment_angle(coords[f'{side}_wrist'], coords[f'{side}_pinky'])
+        
+        features[f'forearm_{side}_flex_ext_angle'] = flex_ext
+        features[f'forearm_{side}_abd_add_angle'] = abd_add
+        features[f'forearm_{side}_rot_angle'] = rot
     
-    # e. Shank angles (left and right)
-    shank_l = calculate_segment_angle(coords['left_knee'], coords['left_ankle'])
-    shank_r = calculate_segment_angle(coords['right_knee'], coords['right_ankle'])
-    features['shank_left_angle'] = shank_l
-    features['shank_right_angle'] = shank_r
+    # d. Thigh Angles (Left and Right)
+    for side in ['left', 'right']:
+        hip = coords[f'{side}_hip']
+        knee = coords[f'{side}_knee']
+        
+        # Flexion/Extension
+        flex_ext = calculate_joint_angle(hip, knee, coords[f'{side}_ankle'])
+        # Abduction/Adduction
+        abd_add = calculate_segment_angle(hip, knee)
+        # Rotation
+        rot = calculate_segment_angle(knee, coords[f'{side}_ankle'])
+        
+        features[f'thigh_{side}_flex_ext_angle'] = flex_ext
+        features[f'thigh_{side}_abd_add_angle'] = abd_add
+        features[f'thigh_{side}_rot_angle'] = rot
     
-    # 2. Centroid Locations (9 features)
+    # e. Shank Angles (Left and Right)
+    for side in ['left', 'right']:
+        knee = coords[f'{side}_knee']
+        ankle = coords[f'{side}_ankle']
+        heel = coords[f'{side}_heel']
+        
+        # Flexion/Extension
+        flex_ext = calculate_joint_angle(knee, ankle, heel)
+        # Abduction/Adduction
+        abd_add = calculate_segment_angle(knee, ankle)
+        # Rotation
+        rot = calculate_segment_angle(ankle, heel)
+        
+        features[f'shank_{side}_flex_ext_angle'] = flex_ext
+        features[f'shank_{side}_abd_add_angle'] = abd_add
+        features[f'shank_{side}_rot_angle'] = rot
+    
+    # Repeat similar calculations for other body segments if applicable
+    # Ensure all 9 segments have 3 angles each
+    
+    # 2. Centroid Locations (3 features)
     waist_point = find_waist_point(coords, alpha=0.5)
     centroids = calculate_centroids(coords, waist_point)
-    features['C_upper_x'] = centroids['C_upper'][0]
-    features['C_upper_y'] = centroids['C_upper'][1]
-    features['C_upper_z'] = centroids['C_upper'][2]
+    features['C_upper'] = centroids['C_upper']
+    features['C_lower'] = centroids['C_lower']
+    features['C_total'] = centroids['C_total']
     
-    features['C_lower_x'] = centroids['C_lower'][0]
-    features['C_lower_y'] = centroids['C_lower'][1]
-    features['C_lower_z'] = centroids['C_lower'][2]
+    # 3. Yaw Trunk Angle (Already included as 'trunk_rot_angle')
     
-    features['C_total_x'] = centroids['C_total'][0]
-    features['C_total_y'] = centroids['C_total'][1]
-    features['C_total_z'] = centroids['C_total'][2]
-    
-    # 3. Yaw Trunk Angle (1 feature)
-    yaw_trunk = calculate_yaw_angle(coords['left_shoulder'], coords['right_shoulder'])
-    features['yaw_trunk_angle'] = yaw_trunk
-    
-    # 4. Hip and Shoulder Coordinates (12 features)
-    key_joints = ['left_hip', 'right_hip', 'left_shoulder', 'right_shoulder']
+    # 4. Hip and Shoulder Coordinates (14 features)
+    key_joints = [
+        'left_hip', 'right_hip',
+        'left_shoulder', 'right_shoulder',
+        'left_elbow', 'right_elbow',
+        'left_knee'
+    ]
     for joint in key_joints:
         features[f'{joint}_x'] = coords[joint][0]
         features[f'{joint}_y'] = coords[joint][1]
-        features[f'{joint}_z'] = coords[joint][2]
     
-    # 5. Joint Angles (14 features)
-    # a. Elbow angles (left and right)
-    elbow_l = calculate_joint_angle(coords['left_shoulder'], coords['left_elbow'], coords['left_wrist'])
-    elbow_r = calculate_joint_angle(coords['right_shoulder'], coords['right_elbow'], coords['right_wrist'])
-    features['elbow_left_angle'] = elbow_l
-    features['elbow_right_angle'] = elbow_r
+    # 5. Joint Angles (Removed to prevent redundancy)
+    # Ensure all necessary angles are included in Body Segment Angles
     
-    # b. Shoulder angles (left and right)
-    shoulder_l = calculate_joint_angle(hip_center, coords['left_shoulder'], coords['left_elbow'])
-    shoulder_r = calculate_joint_angle(hip_center, coords['right_shoulder'], coords['right_elbow'])
-    features['shoulder_left_angle'] = shoulder_l
-    features['shoulder_right_angle'] = shoulder_r
-    
-    # c. Hip angles (left and right)
-    hip_l = calculate_joint_angle(hip_center, coords['left_hip'], coords['left_knee'])
-    hip_r = calculate_joint_angle(hip_center, coords['right_hip'], coords['right_knee'])
-    features['hip_left_angle'] = hip_l
-    features['hip_right_angle'] = hip_r
-    
-    # d. Knee angles (left and right)
-    knee_l = calculate_joint_angle(coords['left_hip'], coords['left_knee'], coords['left_ankle'])
-    knee_r = calculate_joint_angle(coords['right_hip'], coords['right_knee'], coords['right_ankle'])
-    features['knee_left_angle'] = knee_l
-    features['knee_right_angle'] = knee_r
-    
-    # e. Ankle angles (left and right)
-    ankle_l = calculate_joint_angle(coords['left_knee'], coords['left_ankle'], coords['left_heel'])
-    ankle_r = calculate_joint_angle(coords['right_knee'], coords['right_ankle'], coords['right_heel'])
-    features['ankle_left_angle'] = ankle_l
-    features['ankle_right_angle'] = ankle_r
-    
-    # f. Wrist angles (left and right)
-    wrist_l = calculate_joint_angle(coords['left_elbow'], coords['left_wrist'], coords['left_pinky'])
-    wrist_r = calculate_joint_angle(coords['right_elbow'], coords['right_wrist'], coords['right_pinky'])
-    features['wrist_left_angle'] = wrist_l
-    features['wrist_right_angle'] = wrist_r
-    
-    # g. Foot angles (left and right)
-    foot_l = calculate_joint_angle(coords['left_ankle'], coords['left_heel'], coords['left_foot_index'])
-    foot_r = calculate_joint_angle(coords['right_ankle'], coords['right_heel'], coords['right_foot_index'])
-    features['foot_left_angle'] = foot_l
-    features['foot_right_angle'] = foot_r
-    
-    # # 6. Body Segment Masses (8 features)
-    # # Calculate mass for each body segment
-    # segments = ['head', 'trunk', 'upper_arm', 'forearm', 'hand', 'thigh', 'shank', 'foot']
-    # for segment in segments:
-    #     mass = calculate_segment_mass(total_mass, segment, gender)
-    #     features[f'{segment}_mass'] = mass
-
-    print(f"Total frature shapes? Ans: {len(features.values())}")
     return features
 
 def process_csv(input_csv, output_csv, total_mass=70.0, gender='male'):
@@ -440,10 +448,10 @@ def process_csv(input_csv, output_csv, total_mass=70.0, gender='male'):
         # Extract biomechanical features
         features = extract_biomechanical_features(coords, total_mass, gender)
         features_list.append(features)
-        count_frame = count_frame + 1
+        count_frame += 1
     
     # Create DataFrame from features
-    features_df = pd.DataFrame(features_list, columns=FEATURE_NAMES) # + [f'{seg}_mass' for seg in ['head', 'trunk', 'upper_arm', 'forearm', 'hand', 'thigh', 'shank', 'foot']]
+    features_df = pd.DataFrame(features_list, columns=FEATURE_NAMES)
     
     # Save to CSV
     features_df.to_csv(output_csv, index=False, header=None)
@@ -451,8 +459,8 @@ def process_csv(input_csv, output_csv, total_mass=70.0, gender='male'):
 
 # Example usage
 if __name__ == "__main__":
-    input_csv_path = 'fall_dataset_preprocessed/X_train_fall.csv'          # Replace with your input CSV file path
-    output_csv_path = 'fall_dataset_preprocessed/X_train_fall_biomechanical_features.csv' # Desired output CSV file path
+    input_csv_path = 'fall_dataset_preprocessed/X_train_fall.csv'  # Replace with your input CSV file path
+    output_csv_path = 'fall_dataset_preprocessed/X_train_fall_biomechanical_features.csv'  # Desired output CSV file path
     total_body_mass = 70.0  # Example total body mass in kg
     gender = 'male'          # 'male' or 'female'
     

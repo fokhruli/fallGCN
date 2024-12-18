@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import pdb
 
 # Keep all the original body part indices
@@ -58,7 +58,7 @@ class Data_Loader():
         self.train_x, self.train_biomech, self.train_y = self.import_dataset()
         self.num_joints = len(self.body_part)
         self.sc1 = StandardScaler()
-        self.sc2 = StandardScaler()  # Additional scaler for biomechanical features
+        self.sc2 = MinMaxScaler()  # Additional scaler for biomechanical features
         self.scaled_pose_x, self.scaled_biomech_x, self.scaled_y = self.preprocessing()
                 
     def body_parts(self):
@@ -67,7 +67,7 @@ class Data_Loader():
     def import_dataset(self):
         # Load features and labels from CSV files
         train_x = pd.read_csv("/home/rmedu/Fokhrul/fallGCN/fall_dataset_preprocessed/X_train_fall.csv", header=None).values
-        train_biomech = pd.read_csv("/home/rmedu/Fokhrul/fallGCN/fall_dataset_preprocessed/X_train_fall_biomechanical_features.csv", header=None).values
+        train_biomech = pd.read_csv("/home/rmedu/Fokhrul/fallGCN/fall_dataset_preprocessed/X_train_fall_biomechanical_features_v0.csv", header=None).values
         train_y = pd.read_csv("/home/rmedu/Fokhrul/fallGCN/fall_dataset_preprocessed/y_train_fall.csv", header=None).values
         return train_x, train_biomech, train_y
             

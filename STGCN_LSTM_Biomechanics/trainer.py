@@ -66,6 +66,8 @@ logging.info(f"Training class distribution: {dict(zip(unique, counts))}")
 unique, counts = np.unique(valid_y, return_counts=True)
 logging.info(f"Validation class distribution: {dict(zip(unique, counts))}")
 
+# import pdb
+# pdb.set_trace()
 # Initialize trainer with device
 trainer = FusedModelTrainer(
     train_pose_x=train_pose_x,
