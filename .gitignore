@@ -5,7 +5,7 @@ venv/
 !spec/*.json
 code_torch/best_model.pth
 pose_landmarker.task
-*.txt
+# *.txt
 *.sh
 *.csv
 *.avi
