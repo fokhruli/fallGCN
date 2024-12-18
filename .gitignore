@@ -5,6 +5,7 @@ venv/
 !spec/*.json
 code_torch/best_model.pth
 pose_landmarker.task
+Biomech_feature_based/svm.py
 # *.txt
 *.sh
 *.csv
@@ -20,3 +21,5 @@ STGCN_LSTM/__pycache__/
 figures/
 models/
 fall_dataset_preprocessed/
+Biomech_feature_based/Train_X.csv
+Biomech_feature_based/Train_Y.csv
