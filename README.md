@@ -1,6 +1,6 @@
 # fallGCN: Fall Prediction Pipeline using Spatio-temporal Graph Convoulation Networks with Biomechanical Feature Fusion
 
-A robust Python-based solution for predicting falls using skeletal (pose) data and biomechanics data. The pipeline supports two model variants:
+A repository for predicting falls using skeletal (pose) data and biomechanics data. The pipeline supports two model variants:
 - **Vanilla Model**: Uses only skeleton (pose) data process by GCN
 - **Fusion Model**: Combines skeleton data with biomechanics data for enhanced prediction accuracy
 
@@ -17,17 +17,26 @@ A robust Python-based solution for predicting falls using skeletal (pose) data a
 ## Features
 
 - Dual model support (vanilla and fusion)
+- use graph based model (ST-GCN+LSTM) for prediction
 - Hugging Face integration for model management
 - Flexible inference pipeline
 - Comprehensive evaluation metrics
-- Structured logging system
 
 ## Installation
 
+
 ### Prerequisites
+
 - Python 3.8 or higher
-- pytorch == 2.1.0+cu121 
+- CUDA-capable GPU
+- CUDA Toolkit 12.1
+- PyTorch 2.1.0 with CUDA 12.1 support (check their website)
+  ```bash
+  # Install PyTorch with CUDA 12.1
+  pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+  ```
 - Hugging Face account (for accessing model repositories)
+
 
 ### Setup
 
@@ -56,20 +65,128 @@ A robust Python-based solution for predicting falls using skeletal (pose) data a
 
 ## Data
 
-### Data Download
-1. Access the dataset from the provided source (contact repository maintainers for access)
-2. Place the downloaded data in the `data/` directory
-
 ### Data Structure
-- `pose_data/`: Contains skeletal data files
-- `biomech_data/`: Contains biomechanics data files (required for fusion model only)
+The dataset consists of 24 fall scenarios (`chute01` to `chute24`), each containing:
+- 8 camera views (cam1.avi to cam8.avi)
+- Associated landmark files in the `landmarks` directory (need to create)
 
-### Preprocessing
-The pipeline includes automatic preprocessing steps:
-- Scaling of pose data
-- Normalization of biomechanics data
-- Feature alignment for fusion model
+```
+dataset/
+├── chute01/
+│   ├── cam1.avi
+│   ├── cam2.avi
+│   ...
+│   ├── cam8.avi
+│   └── landmarks/
+│       ├── cam1_landmarks.txt
+│       ├── cam2_landmarks.txt
+│       ...
+│       └── cam8_landmarks.txt
+├── chute02/
+...
+└── chute24/
+```
 
+### Data Download and Setup
+
+1. Download the dataset:
+   ```bash
+   wget https://www.iro.umontreal.ca/~labimage/Dataset/dataset.zip -O dataset.zip
+   ```
+
+3. Extract and organize:
+   ```bash
+   unzip dataset.zip
+   ```
+
+### Data Format
+- **Video Files**: `.avi` format, 8 synchronized camera views per scenario
+- **Total Size**: Approximately 3 GB (uncompressed)
+
+
+## Preprocessing
+
+The preprocessing pipeline consists of four main stages:
+
+### 1. Landmark Extraction
+```bash
+# Run the landmark extraction script
+python data_preprocess_scrpts/data_preprocess_from_videos.py
+```
+
+This step:
+- Processes raw video files from all cameras
+- Extracts 3D pose landmarks using MediaPipe
+- Saves landmarks in .txt format for each camera view
+
+### Directory Structure After Preprocessing
+
+```
+dataset/
+├── chute01/
+│   ├── cam1.avi
+│   ├── cam2.avi
+│   ├── cam3.avi
+│   ├── cam4.avi
+│   ├── cam5.avi
+│   ├── cam6.avi
+│   ├── cam7.avi
+│   ├── cam8.avi
+│   └── landmarks/
+│       ├── cam1_landmarks.txt
+│       ├── cam2_landmarks.txt
+│       ├── cam3_landmarks.txt
+│       ├── cam4_landmarks.txt
+│       ├── cam5_landmarks.txt
+│       ├── cam6_landmarks.txt
+│       ├── cam7_landmarks.txt
+│       └── cam8_landmarks.txt
+├── chute02/
+    [same structure as above]
+...
+└── chute24/
+    [same structure as above]
+
+```
+
+### 2. Label Generation
+```bash
+# Generate labels using the dataset mapping
+python data_preprocess_scrpts/create_label_file.py
+# output csv file: fall_detection_labels_combines.csv
+```
+
+This step:
+- Uses provided frame-level annotations
+- Accounts for camera synchronization lag
+- Handles multi-camera temporal alignment
+
+### 3. Graph Dataset Creation
+```bash
+# Create graph-based dataset
+python data_preprocess_scrpts/make_training_pose_data.py
+```
+
+For visulization and check validity of data creation:
+```bash
+# Create graph-based dataset
+python data_preprocess_scrpts/analyzing_skeleton.py
+```
+
+### 4. Handcrafted Feature Extraction for 45 biomechanical features 
+```bash
+# Extract handcrafted biomechanical features
+python data_preprocess_scrpts/calculate_biomechanical_features.py
+```
+This step:
+- Calculates biomechanical features
+- For more information about features see given report
+
+### Data Validation
+After preprocessing, validate the data:
+```bash
+python data_preprocess_scrpts/check_input_csv_dimention.py
+```
 
 ## Model Training
 

@@ -17,6 +17,7 @@ test.py
 pose_estimation_single.py
 README.txt
 predict.py
+Biomech_feature_based/
 # *.txt
 *.sh
 *.csv
