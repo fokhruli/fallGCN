@@ -80,9 +80,7 @@ The system uses STGCN_LSTM architecture with two variants:
 
 ### Model Pipeline
 <div align="center">
-    <object data="Overall_diagram.drawio.pdf" type="application/pdf" width="100%" height="800px">
-        <p>Unable to display PDF file. <a href="Overall_diagram.drawio.pdf">Download</a> instead.</p>
-    </object>
+    <embed src="Overall_diagram.drawio.pdf" type="application/pdf" width="100%" height="800px">
 </div>
 
 **Figure 1: Fall Prediction Model Pipeline.** The workflow consists of several key stages:
