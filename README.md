@@ -65,8 +65,7 @@ A repository for predicting falls using skeletal (pose) data and biomechanics da
 
 ## Dataset
 * [Multiple cameras fall dataset](https://www.iro.umontreal.ca/~labimage/Dataset/)
-* (Technical report)[https://www.iro.umontreal.ca/~labimage/Dataset/technicalReport.pdf]
-
+* [https://www.iro.umontreal.ca/~labimage/Dataset/technicalReport.pdf](Technical report)
 ### Data Download and Setup
 
 1. Download the dataset:
