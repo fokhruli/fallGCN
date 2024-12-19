@@ -20,6 +20,7 @@ test.py
 STGCN_LSTM/__pycache__/
 figures/
 models/
+STGCN_LSTM_DyAtt/
 fall_dataset_preprocessed/
 Biomech_feature_based/Train_X.csv
 Biomech_feature_based/Train_Y.csv
