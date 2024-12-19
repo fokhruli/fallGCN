@@ -1,6 +1,11 @@
 dataset/
 fixed length attention/
 venv/
+__pycache__/
+.vscode/
+.idea/
+*.swp
+.DS_Store
 *.pth
 !spec/*.json
 code_torch/best_model.pth
