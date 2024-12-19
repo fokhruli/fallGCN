@@ -188,11 +188,11 @@ python data_preprocess_scripts/check_input_csv_dimention.py
 ```
 
 ## Model Training
-
+<!-- 
 ### Model Architecture
 The system uses STGCN_LSTM architecture with two variants:
 - Vanilla model for pose-only prediction
-- Fusion model for combined pose and biomechanics prediction
+- Fusion model for combined pose and biomechanics prediction -->
 
 ### Model Pipeline
 <div align="center">
@@ -238,11 +238,13 @@ STGCN_LSTM/stgcn.py:  whole model build here, details will given in report -->
 ├── STGCN_LSTM/
 │   ├── trainer.py          # Training script for basic model
 │   ├── graph.py           # Graph structure definitions
+│   ├── stgcn.py           # model
 │   └── data_processing.py # Dataset preparation utilities
 │
 ├── STGCN_LSTM_Biomechanics/
 │   ├── trainer.py          # Training script for fusion model
 │   ├── graph.py           # Graph structure definitions
+│   ├── stgcn.py           # model
 │   └── data_processing.py # Dataset preparation utilities
 ```
 
@@ -271,7 +273,7 @@ For basic ST-GCN model:
 python STGCN_LSTM/trainer.py
 ```
 
-For biomechanical fusion model:
+For ST-GCN and biomechanical fusion model:
 ```bash
 python STGCN_LSTM_Biomechanics/trainer.py
 ```
