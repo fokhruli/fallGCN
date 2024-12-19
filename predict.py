@@ -11,7 +11,7 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 from STGCN_LSTM_Biomechanics.data_processing import Data_Loader
 from STGCN_LSTM_Biomechanics.graph import Graph
-from STGCN_LSTM_Biomechanics.stgcn import SGCN_LSTM_Fused  # Import your model class
+from STGCN_LSTM_Biomechanics.stgcn import SGCN_LSTM_Fused
 import joblib
 
 # Configure logging
@@ -70,7 +70,7 @@ model = SGCN_LSTM_Fused(
 model.to(device)
 print(model)
 # Load the saved state dictionary
-best_model_path = os.path.join('models', 'best_model_AttFusion.pth')
+best_model_path = os.path.join('models', 'best_model_With_fusion.pth')
 
 try:
     state_dict = torch.load(best_model_path, map_location=device)
