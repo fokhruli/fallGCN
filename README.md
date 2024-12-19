@@ -1,4 +1,4 @@
-# fallGCN: Fall Prediction Pipeline using Spatio-temporal Graph Convoulation Networks with Biomechanical Feature Fusion
+# FallGCN: Fall Intent Prediction via Spatial-Temporal Graph Convolutional Networks with Biomechanical Feature Attention
 
 A repository for predicting falls using skeletal (pose) data and biomechanics data. The pipeline supports two model variants:
 - **Vanilla Model**: Uses only skeleton (pose) data process by GCN
