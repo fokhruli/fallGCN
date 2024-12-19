@@ -63,7 +63,26 @@ A repository for predicting falls using skeletal (pose) data and biomechanics da
    pip install -r requirements.txt
    ```
 
-## Data
+## Dataset
+* (Multiple cameras fall dataset)[https://www.iro.umontreal.ca/~labimage/Dataset/]
+* (Technical report)[https://www.iro.umontreal.ca/~labimage/Dataset/technicalReport.pdf]
+
+### Data Download and Setup
+
+1. Download the dataset:
+   ```bash
+   wget https://www.iro.umontreal.ca/~labimage/Dataset/dataset.zip -O dataset.zip
+   ```
+
+3. Extract and organize:
+   ```bash
+   unzip dataset.zip
+   ```
+
+### Data Format
+- **Video Files**: `.avi` format, 8 synchronized camera views per scenario
+- **Total Size**: Approximately 3 GB (uncompressed)
+
 
 ### Data Structure
 The dataset consists of 24 fall scenarios (`chute01` to `chute24`), each containing:
@@ -87,23 +106,6 @@ dataset/
 └── chute24/
 ```
 
-### Data Download and Setup
-
-1. Download the dataset:
-   ```bash
-   wget https://www.iro.umontreal.ca/~labimage/Dataset/dataset.zip -O dataset.zip
-   ```
-
-3. Extract and organize:
-   ```bash
-   unzip dataset.zip
-   ```
-
-### Data Format
-- **Video Files**: `.avi` format, 8 synchronized camera views per scenario
-- **Total Size**: Approximately 3 GB (uncompressed)
-
-
 ## Preprocessing
 
 The preprocessing pipeline consists of four main stages:
@@ -111,7 +113,7 @@ The preprocessing pipeline consists of four main stages:
 ### 1. Landmark Extraction
 ```bash
 # Run the landmark extraction script
-python data_preprocess_scrpts/data_preprocess_from_videos.py
+python data_preprocess_scripts/data_preprocess_from_videos.py
 ```
 
 This step:
@@ -152,7 +154,7 @@ dataset/
 ### 2. Label Generation
 ```bash
 # Generate labels using the dataset mapping
-python data_preprocess_scrpts/create_label_file.py
+python data_preprocess_scripts/create_label_file.py
 # output csv file: fall_detection_labels_combines.csv
 ```
 
@@ -164,19 +166,19 @@ This step:
 ### 3. Graph Dataset Creation
 ```bash
 # Create graph-based dataset
-python data_preprocess_scrpts/make_training_pose_data.py
+python data_preprocess_scripts/make_training_pose_data.py
 ```
 
 For visulization and check validity of data creation:
 ```bash
 # Create graph-based dataset
-python data_preprocess_scrpts/analyzing_skeleton.py
+python data_preprocess_scripts/analyzing_skeleton.py
 ```
 
 ### 4. Handcrafted Feature Extraction for 45 biomechanical features 
 ```bash
 # Extract handcrafted biomechanical features
-python data_preprocess_scrpts/calculate_biomechanical_features.py
+python data_preprocess_scripts/calculate_biomechanical_features.py
 ```
 This step:
 - Calculates biomechanical features
@@ -185,7 +187,7 @@ This step:
 ### Data Validation
 After preprocessing, validate the data:
 ```bash
-python data_preprocess_scrpts/check_input_csv_dimention.py
+python data_preprocess_scripts/check_input_csv_dimention.py
 ```
 
 ## Model Training
