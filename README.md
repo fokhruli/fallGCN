@@ -79,7 +79,9 @@ The system uses STGCN_LSTM architecture with two variants:
 - Fusion model for combined pose and biomechanics prediction
 
 ### Model Pipeline
-![Fall Prediction Model Pipeline](Overall_diagram.drawio.png)
+<div align="center">
+    <img src="Overall_diagram.drawio.png" alt="Fall Prediction Model Pipeline" style="width: 100%; max-width: 1200px;">
+</div>
 
 **Figure 1: Fall Prediction Model Pipeline.** The workflow consists of several key stages:
 1. **Input Processing**: Video frames are processed using MediaPipe Pose to extract 3D landmarks
