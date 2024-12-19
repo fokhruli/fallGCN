@@ -7,6 +7,8 @@ code_torch/best_model.pth
 pose_landmarker.task
 predict.py
 Biomech_feature_based/svm.py
+fall_feature.py
+test.py
 # *.txt
 *.sh
 *.csv

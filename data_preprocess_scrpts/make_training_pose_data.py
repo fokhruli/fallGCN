@@ -233,8 +233,8 @@ def process_data(data_dir, labels_file, output_x, output_y, start_chute=1, end_c
 if __name__ == "__main__":
     data_dir = "dataset"
     labels_file = "fall_detection_labels_combines.csv"
-    output_x = "X_train_fall_90.csv"
-    output_y = "y_train_fall_90.csv"
+    output_x = "fall_dataset_preprocessed/X_train_fall.csv"
+    output_y = "fall_dataset_preprocessed/y_train_fall.csv"
     
     # Process only chute 1 (can be modified to process more chutes)
     START_CHUTE = 1
