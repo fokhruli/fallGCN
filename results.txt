@@ -118,3 +118,13 @@ Training completed. Best validation AUPRC: 0.7769
 2024-12-19 01:17:23,929 - INFO - Recall: 0.7027
 2024-12-19 01:17:23,930 - INFO - F1-score: 0.7429
 2024-12-19 01:17:23,930 - INFO - AUPRC: 0.7433
+
+
+stgcn + 2 LSTM  (model_2): 
+v3
+Training completed. Best validation AUPRC: 0.7384
+2024-12-19 17:54:26,089 - INFO - Precision: 0.6829
+2024-12-19 17:54:26,090 - INFO - Recall: 0.7568
+2024-12-19 17:54:26,090 - INFO - F1-score: 0.7179
+2024-12-19 17:54:26,091 - INFO - AUPRC: 0.7097
+

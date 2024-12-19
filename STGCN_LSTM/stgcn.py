@@ -237,7 +237,7 @@ class SGCNLSTMTrainer:
 
         # Create a directory to save the best model
         os.makedirs('models', exist_ok=True)
-        best_model_path = os.path.join('models', 'best_model.pth')
+        best_model_path = os.path.join('models', 'best_model_vanilla.pth')
 
         for epoch in range(self.epochs):
             # Training Phase

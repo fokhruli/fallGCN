@@ -364,7 +364,7 @@ class FusedModelTrainer:
                                     patience=100, verbose=True)
         
         os.makedirs('models', exist_ok=True)
-        best_model_path = os.path.join('models', 'best_model_fused.pth')
+        best_model_path = os.path.join('models', 'best_model_With_fusion.pth')
 
         for epoch in range(self.epochs):
             # Training Phase
@@ -468,4 +468,3 @@ class FusedModelTrainer:
         """
         self.model.load_state_dict(torch.load(model_path))
         self.model.eval()
-

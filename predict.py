@@ -68,9 +68,9 @@ model = SGCN_LSTM_Fused(
 
 # Move the model to the appropriate device
 model.to(device)
-
+print(model)
 # Load the saved state dictionary
-best_model_path = os.path.join('models', 'best_model_fused.pth')
+best_model_path = os.path.join('models', 'best_model_AttFusion.pth')
 
 try:
     state_dict = torch.load(best_model_path, map_location=device)
@@ -89,17 +89,6 @@ data_loader = Data_Loader()
 # Load the graph adjacency matrices
 graph = Graph(len(data_loader.body_part))
 
-# # Optionally, load the scaler if you saved it during training
-# scaler_path_pose = 'scalers/pose_scaler.pkl'
-# scaler_path_biomech = 'scalers/biomech_scaler.pkl'
-
-# try:
-#     pose_scaler = joblib.load(scaler_path_pose)
-#     biomech_scaler = joblib.load(scaler_path_biomech)
-#     logging.info('Scalers loaded successfully.')
-# except Exception as e:
-#     logging.error(f'Error loading scalers: {e}')
-#     sys.exit(1)
 
 # Split data into training and validation sets with stratification
 train_pose_x, valid_pose_x, train_biomech_x, valid_biomech_x, train_y, valid_y = train_test_split(
@@ -145,8 +134,9 @@ def predict(model, pose_data, biomech_data, device, batch_size=32):
             # Forward pass
             outputs = model(batch_pose, batch_biomech)
             # Assuming the model outputs logits; apply sigmoid for binary classification
-            probs = torch.sigmoid(outputs).cpu().numpy()
-            y_pred_prob.extend(probs.flatten())
+            probs = torch.softmax(outputs, dim=1)[:, 1]
+            y_pred_prob.extend(probs.cpu().numpy())
+            # y_pred_prob.extend(probs.flatten())
 
     return np.array(y_pred_prob)
 
@@ -156,8 +146,8 @@ y_pred_prob = predict(model, valid_pose_x, valid_biomech_x, device)
 # Convert probabilities to binary predictions (threshold = 0.5)
 y_pred = (y_pred_prob >= 0.5).astype(int)
 
-import pdb
-pdb.set_trace()
+# import pdb
+# pdb.set_trace()
 # Evaluation Metrics
 precision = precision_score(valid_y, y_pred, zero_division=0)
 recall = recall_score(valid_y, y_pred, zero_division=0)
