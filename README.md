@@ -1,13 +1,13 @@
 # FallGCN: Fall Intent Prediction Using Fusion of Spatial-Temporal Graph Convolutional Networks and Biomechanical Feature
 
-A repository for predicting falls using skeletal (pose) data and biomechanics data. The pipeline supports two model variants:
+A repository for predicting falls using skeletal (pose) and biomechanics data. The pipeline supports two model variants:
 - **Vanilla Model**: Uses only skeleton (pose) data process by GCN
 - **Fusion Model**: Combines skeleton data with biomechanics data for enhanced prediction accuracy
 
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)
-- [Dataset](#data)
+- [Dataset](#dataset)
 - [Model Training](#model-training)
 - [Inference](#inference)
 - [Evaluation](#evaluation)
@@ -63,7 +63,7 @@ A repository for predicting falls using skeletal (pose) data and biomechanics da
 
 ## Dataset
 * [Multiple cameras fall dataset](https://www.iro.umontreal.ca/~labimage/Dataset/)
-* [https://www.iro.umontreal.ca/~labimage/Dataset/technicalReport.pdf](Technical report)
+* [Technical report](https://www.iro.umontreal.ca/~labimage/Dataset/technicalReport.pdf)
 ### Data Download and Setup
 
 1. Download the dataset:
