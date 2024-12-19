@@ -11,8 +11,6 @@ Biomech_feature_based/svm.py
 *.csv
 *.avi
 *.log
-# STGCN_LSTM/Train_X_openpose.csv
-# STGCN_LSTM/Train_Y_openpose.csv
 # Train_X_fall.csv
 # Train_y_fall.csv
 test.py
@@ -20,7 +18,10 @@ test.py
 STGCN_LSTM/__pycache__/
 figures/
 models/
+figures_nn/
 STGCN_LSTM_DyAtt/
 fall_dataset_preprocessed/
 Biomech_feature_based/Train_X.csv
 Biomech_feature_based/Train_Y.csv
+Biomech_feature_based/model_cnn.py
+Biomech_feature_based/model_lstm.py
