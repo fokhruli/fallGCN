@@ -1,4 +1,4 @@
-#fallGCN: Fall Prediction Pipeline using Spatio-temporal Graph Convoulation Networks with Biomechanical Feature Fusion
+# fallGCN: Fall Prediction Pipeline using Spatio-temporal Graph Convoulation Networks with Biomechanical Feature Fusion
 
 A robust Python-based solution for predicting falls using skeletal (pose) data and biomechanics data. The pipeline supports two model variants:
 - **Vanilla Model**: Uses only skeleton (pose) data process by GCN
@@ -54,18 +54,6 @@ A robust Python-based solution for predicting falls using skeletal (pose) data a
    pip install -r requirements.txt
    ```
 
-<!-- 4. **Configure Hugging Face Authentication**
-   ```bash
-   # Unix/MacOS
-   export HUGGINGFACE_HUB_TOKEN=your_token_here
-   
-   # Windows (CMD)
-   set HUGGINGFACE_HUB_TOKEN=your_token_here
-   
-   # Windows (PowerShell)
-   $env:HUGGINGFACE_HUB_TOKEN="your_token_here" -->
-   ```
-
 ## Data
 
 ### Data Download
@@ -82,12 +70,26 @@ The pipeline includes automatic preprocessing steps:
 - Normalization of biomechanics data
 - Feature alignment for fusion model
 
+
 ## Model Training
 
 ### Model Architecture
 The system uses STGCN_LSTM architecture with two variants:
 - Vanilla model for pose-only prediction
 - Fusion model for combined pose and biomechanics prediction
+
+### Model Pipeline
+![Fall Prediction Model Pipeline](Overall_diagram.drawio.png)
+
+**Figure 1: Fall Prediction Model Pipeline.** The workflow consists of several key stages:
+1. **Input Processing**: Video frames are processed using MediaPipe Pose to extract 3D landmarks
+2. **Data Preparation**: Landmarks are labeled and segmented using a sliding window approach
+3. **Dual-Stream Processing**:
+   - **Pose Stream**: Processes pose data through ST-GCN and BiLSTM
+   - **Biomechanical Stream**: Analyzes biomechanical features using neural network and BiLSTM
+4. **Feature Fusion**: Concatenates feature vectors from both streams
+5. **Classification**: Processed through fully connected layers to generate fall probability
+6. **Training**: Uses weighted Binary Cross-Entropy loss to handle class imbalance
 
 ### Training Process
 1. **Configure Training Parameters**
@@ -103,6 +105,7 @@ The system uses STGCN_LSTM architecture with two variants:
    ```bash
    python train.py --model [vanilla|fusion] --config config.yaml
    ```
+
 
 ## Inference
 
