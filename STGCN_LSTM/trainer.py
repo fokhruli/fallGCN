@@ -56,8 +56,6 @@ train_x, valid_x, train_y, valid_y = train_test_split(
     stratify=data_loader.scaled_y  # Ensures balanced splits
 )
 
-# Debugging breakpoint (optional)
-# pdb.set_trace()
 
 logging.info(f"Training instances: {len(train_x)}")
 logging.info(f"Validation instances: {len(valid_x)}")
@@ -91,14 +89,6 @@ logging.info(f"Total trainable parameters: {total_params}")
 
 # Train the modelfigures
 history = trainer.train()
-
-# # Load pre-trained weights if they exist
-# try:
-#     trainer.model.load_state_dict(torch.load("best_model.pth"))
-#     trainer.model.to(trainer.device)
-#     logging.info("Loaded pre-trained weights successfully")
-# except FileNotFoundError:
-#     logging.warning("No pre-trained weights found. Proceeding without loading.")
 
 # Make predictions
 y_pred_prob = trainer.predict(valid_x)

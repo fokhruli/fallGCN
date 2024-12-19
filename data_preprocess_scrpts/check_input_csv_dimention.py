@@ -16,8 +16,8 @@ print(data_y.head(5))
 print(data_mechanical_feature.head(5))
 
 
-print(f"Total rows in X_train_fall_90: {total_rows_x}")
-print(f"Total rows in y_train_fall_90: {total_rows_y}")
+print(f"Total rows in X_train_fall: {total_rows_x}")
+print(f"Total rows in y_train_fall: {total_rows_y}")
 print(f"Total row of length mechanical feature {total_rows_mechanical_feature}")
 # Check if they match
 print(f"window size: {total_rows_x/total_rows_y}")

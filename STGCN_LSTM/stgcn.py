@@ -60,20 +60,8 @@ class SGCN_LSTM(nn.Module):
         self.lstm3 = nn.LSTM(input_size=40, hidden_size=40, batch_first=True)
         self.lstm4 = nn.LSTM(input_size=40, hidden_size=80, batch_first=True)
         
-        #BiLSTM layers
-        # self.lstm1 = nn.LSTM(input_size=48 * self.num_nodes, hidden_size=40, batch_first=True)
-        # self.lstm2 = nn.LSTM(input_size=80, hidden_size=40, batch_first=True, bidirectional=True)
-        # self.lstm3 = nn.LSTM(input_size=80, hidden_size=40, batch_first=True, bidirectional=True)
-        # self.lstm4 = nn.LSTM(input_size=40, hidden_size=80, batch_first=True)
         self.final_dense = nn.Linear(80, 2)
-        
-        # self.lstm1 = nn.LSTM(input_size=48 * self.num_nodes, hidden_size=40, batch_first=True, bidirectional=True)
-        # self.lstm2 = nn.LSTM(input_size=80, hidden_size=40, batch_first=True, bidirectional=True)
-        # self.lstm3 = nn.LSTM(input_size=80, hidden_size=40, batch_first=True, bidirectional=True)
-        # self.lstm4 = nn.LSTM(input_size=80, hidden_size=80, batch_first=True, bidirectional=True)
-        # # Final Dense Layer for Binary Classification
-        # self.final_dense = nn.Linear(80, 2)  # Changed to 2 outputs for CrossEntropyLoss
-        
+                
         self.dropout = nn.Dropout(0.25)
 
     def sgcn_block(self, x, temporal_conv, gcn_conv1, gcn_conv2, temp_conv1, temp_conv2, temp_conv3):
@@ -112,16 +100,7 @@ class SGCN_LSTM(nn.Module):
         x1 = self.sgcn_block(x, self.temporal_conv1, self.gcn_conv1_1, self.gcn_conv1_2,
                             self.temp_conv1_1, self.temp_conv1_2, self.temp_conv1_3)
         
-        # # Second SGCN block with residual
-        # x2 = self.sgcn_block(x1, self.temporal_conv2, self.gcn_conv2_1, self.gcn_conv2_2,
-        #                     self.temp_conv2_1, self.temp_conv2_2, self.temp_conv2_3)
-        # x2 = x2 + x1
-
         x3 = x1        
-        # # Third SGCN block with residual
-        # x3 = self.sgcn_block(x2, self.temporal_conv3, self.gcn_conv3_1, self.gcn_conv3_2,
-        #                     self.temp_conv3_1, self.temp_conv3_2, self.temp_conv3_3)
-        # x3 = x3 + x2
         
         # Reshape for LSTM [batch, timesteps, nodes * features]
         x3 = x3.permute(0, 2, 3, 1)  # [batch, timesteps, nodes, features]
@@ -131,12 +110,7 @@ class SGCN_LSTM(nn.Module):
         # LSTM layers
         x4, _ = self.lstm1(x3)  # [batch, timesteps, 80]
         x4 = self.dropout(x4)
-        # x5, _ = self.lstm2(x4)  # [batch, timesteps, 40]
-        # x5 = self.dropout(x5)
-        
-        # x6, _ = self.lstm3(x5)  # [batch, timesteps, 40]
-        # x6 = self.dropout(x6)
-        
+
         x7, _ = self.lstm4(x4)  # [batch, timesteps, 80]
         x7 = self.dropout(x7)
         

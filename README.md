@@ -7,12 +7,10 @@ A repository for predicting falls using skeletal (pose) data and biomechanics da
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)
-- [Data](#data)
+- [Dataset](#data)
 - [Model Training](#model-training)
 - [Inference](#inference)
 - [Evaluation](#evaluation)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
@@ -20,7 +18,7 @@ A repository for predicting falls using skeletal (pose) data and biomechanics da
 - use graph based model (ST-GCN+LSTM) for prediction
 - Hugging Face integration for model management
 - Flexible inference pipeline
-- Comprehensive evaluation metrics
+- Evaluation metrics (e.g., f1 score, AUPRC)
 
 ## Installation
 

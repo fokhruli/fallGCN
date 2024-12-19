@@ -85,25 +85,6 @@ class SGCN_LSTM_Fused(nn.Module):
                                  batch_first=True)
         self.stgcn_lstm2 = nn.LSTM(input_size=40, hidden_size=80, batch_first=True)
 
-        # # BiLSTM for biomechanical features
-        # self.biomech_lstm = nn.LSTM(input_size=biomech_dim, hidden_size=40,
-        #                            batch_first=True, bidirectional=True)
-        
-        # # Fusion layers
-        # self.fusion_layer = nn.Sequential(
-        #     nn.Linear(80 + 80, 128),  # 80 from each BiLSTM (40*2 due to bidirectional)
-        #     nn.ReLU(),
-        #     nn.Dropout(0.25),
-        #     nn.Linear(128, 64),
-        #     nn.ReLU(),
-        #     nn.Dropout(0.25)
-        # )
-        
-        # # Final classification layer
-        # self.final_dense = nn.Linear(64, 2)
-        
-        # self.dropout = nn.Dropout(0.25)
-
         # Biomechanical feature reduction network
         self.biomech_reduction = nn.Sequential(
             nn.Linear(biomech_dim, 30),
@@ -163,30 +144,6 @@ class SGCN_LSTM_Fused(nn.Module):
 
     def process_biomech_features(self, biomech_data):
         # Input shape: [batch, timesteps, features]
-        batch_size, timesteps, _ = biomech_data.shape
-        # import pdb
-        # pdb.set_trace()
-        # # Reshape for feature reduction
-        # biomech_flat = biomech_data.reshape(-1, biomech_data.shape[-1])
-
-        # # Reduce dimensionality from 45 to 30
-        # reduced_features = self.biomech_reduction(biomech_flat)
-        # reduced_features = reduced_features.reshape(batch_size, timesteps, 30)
-        
-        # # Prepare for 1D CNN [batch, channels, timesteps]
-        # cnn_input = reduced_features.transpose(1, 2)
-        
-        # # Apply 1D CNN
-        # cnn_output = self.biomech_cnn(cnn_input)
-        
-        # # Prepare for LSTM [batch, timesteps, features]
-        # lstm_input = cnn_output.transpose(1, 2)
-        
-        # Process through BiLSTM
-        # lstm_output, _ = self.biomech_lstm(biomech_data)
-        # lstm_output = self.dropout(lstm_output)
-        # import pdb
-        # pdb.set_trace()
         lstm_output = biomech_data#[:,:,:19]
         lstm_output, _ = self.biomech_lstm1(lstm_output)
         lstm_output = self.dropout(lstm_output)
@@ -254,22 +211,13 @@ class SGCN_LSTM_Fused(nn.Module):
         biomech_features = self.process_biomech_features(biomech_data)  # [batch, 80]
 
         # Fuse features using attention
-        # import pdb
-        # pdb.set_trace()
         fused_features = self.attention_fusion(stgcn_features2, biomech_features)  # [batch, 128]
-        # fused_features = self.fusion_layer(fused_features)  # [batch, 64]
-        # Scale biomech_features to give less priority
 
         alpha = 0.1  # Scaling factor (adjust as needed)
         fused_features_scaled = fused_features * alpha
 
         # Concatenate ST-GCN features and scaled biomech_features
         fused_features = torch.cat([stgcn_features2, fused_features_scaled], dim=1)  # [batch, 160]
-
-        # Pass through the fusion layer ()
-        # fused_features = self.fusion_layer(fused_features)  # [batch, 64]
-
-        # Final prediction
 
         out = self.final_dense(fused_features)  # [batch, 2]
         

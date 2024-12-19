@@ -65,21 +65,21 @@ Training completed. Best validation AUPRC: 0.7642
 2024-12-18 16:27:53,778 - INFO - F1-score: 0.6829
 2024-12-18 16:27:53,778 - INFO - AUPRC: 0.6737
 
-1 stgcn + 2 LSTM  (model_10):
+1 stgcn + 2 LSTM  (model_9):
 Training completed. Best validation AUPRC: 0.7817
 2024-12-18 16:57:14,562 - INFO - Precision: 0.6170
 2024-12-18 16:57:14,562 - INFO - Recall: 0.7838
 2024-12-18 16:57:14,562 - INFO - F1-score: 0.6905
 2024-12-18 16:57:14,562 - INFO - AUPRC: 0.7327
 
-(with Attfusion: 2 LSTM) stgcn + 2 LSTM  (model_9):
+(with Attfusion: 2 LSTM) stgcn + 2 LSTM  (model_10):
 Training completed. Best validation AUPRC: 0.6224
 2024-12-18 16:49:08,616 - INFO - Precision: 0.6000
 2024-12-18 16:49:08,616 - INFO - Recall: 0.6486
 2024-12-18 16:49:08,616 - INFO - F1-score: 0.6234
 2024-12-18 16:49:08,616 - INFO - AUPRC: 0.5735
 
-(with concat(stgcn+Attfusion): 2 LSTM) stgcn + 2 LSTM  (model_9):
+(with concat(stgcn+Attfusion): 2 LSTM) stgcn + 2 LSTM  (model_11):
 
 Training completed. Best validation AUPRC: 0.7501
 2024-12-18 23:11:15,798 - INFO - Precision: 0.6857
@@ -88,7 +88,7 @@ Training completed. Best validation AUPRC: 0.7501
 2024-12-18 23:11:15,798 - INFO - AUPRC: 0.7196
 
 
-(with fusion: 1 BiLSTM) 1 stgcn + 2 BiLSTM  (model_7):
+(with fusion: 1 BiLSTM) 1 stgcn + 2 BiLSTM  (model_12):
 
 Training completed. Best validation AUPRC: 0.7759
 2024-12-19 00:55:15,666 - INFO - Precision: 0.6444
@@ -96,7 +96,7 @@ Training completed. Best validation AUPRC: 0.7759
 2024-12-19 00:55:15,667 - INFO - F1-score: 0.7073
 2024-12-19 00:55:15,667 - INFO - AUPRC: 0.6593
 
-(with fusion: 1 LSTM) 1 stgcn + 2 LSTM  (model_7):
+(with fusion: 1 LSTM) 1 stgcn + 2 LSTM  (model_13):
 
 Training completed. Best validation AUPRC: 0.8254
 2024-12-19 01:12:15,788 - INFO - Precision: 0.6923
@@ -104,7 +104,7 @@ Training completed. Best validation AUPRC: 0.8254
 2024-12-19 01:12:15,788 - INFO - F1-score: 0.7105
 2024-12-19 01:12:15,789 - INFO - AUPRC: 0.6761
 
-(with fusion: 1 BiLSTM) 1 stgcn + 2 BiLSTM  (model_7) (44 feature):
+(with fusion: 1 BiLSTM) 1 stgcn + 2 BiLSTM  (model_14) (44 feature):
 
 Training completed. Best validation AUPRC: 0.7853
 2024-12-19 01:16:57,637 - INFO - Precision: 0.6429
@@ -112,7 +112,7 @@ Training completed. Best validation AUPRC: 0.7853
 2024-12-19 01:16:57,638 - INFO - F1-score: 0.6835
 2024-12-19 01:16:57,638 - INFO - AUPRC: 0.6366
 
-(with concat(stgcn+Attfusion): 2 LSTM) stgcn + 2 LSTM  (model_9) (44 feature):
+(with concat(stgcn+Attfusion): 2 LSTM) stgcn + 2 LSTM  (model_15) (44 feature):
 Training completed. Best validation AUPRC: 0.7769
 2024-12-19 01:17:23,929 - INFO - Precision: 0.7879
 2024-12-19 01:17:23,929 - INFO - Recall: 0.7027
@@ -120,7 +120,7 @@ Training completed. Best validation AUPRC: 0.7769
 2024-12-19 01:17:23,930 - INFO - AUPRC: 0.7433
 
 
-stgcn + 2 LSTM  (model_2): 
+stgcn + 2 LSTM  (model_16): 
 v3
 Training completed. Best validation AUPRC: 0.7384
 2024-12-19 17:54:26,089 - INFO - Precision: 0.6829

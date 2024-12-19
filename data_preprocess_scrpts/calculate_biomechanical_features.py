@@ -100,7 +100,7 @@ FEATURE_NAMES = [
     'right_elbow_x', 'right_elbow_y',
     'left_knee_x', 'left_knee_y',
     
-    # Note: Yaw Trunk Angle is included as 'trunk_rot_angle'
+    # -->: Yaw Trunk Angle is included as 'trunk_rot_angle'
 ]
 
 def load_landmark_data(csv_file):

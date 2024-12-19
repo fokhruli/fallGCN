@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+""" all info from here https://www.iro.umontreal.ca/~labimage/Dataset/technicalReport.pdf """
+
 def load_delays():
     """Load camera delays for each scenario"""
     # Delays from Figure 3 table
