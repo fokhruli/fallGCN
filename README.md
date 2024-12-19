@@ -136,7 +136,7 @@ Generated plots include:
 - Precision-Recall curves
 - ROC curves
 - Confusion matrices
-
+<!-- 
 ### Logging
 - Logs are stored in `logs/inference.log`
 - Each run overwrites previous logs
@@ -157,18 +157,17 @@ Generated plots include:
    ```bash
    git push origin feature/YourFeatureName
    ```
-5. Create a Pull Request
+5. Create a Pull Request -->
 
-## License
+<!-- ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. -->
 
 ## Contact
 
-- Name: [Your Name]
-- Email: your.email@example.com
-- GitHub: your_username
+- Name: Md Fokhrul Islam
+- Email: fokhrul.rmedu@gmail.com
 
-## extract keypoints/landmarks from videos using mediapipe
+<!-- ## extract keypoints/landmarks from videos using mediapipe
 
-[ConvLSTM](https://github.com/ndrplz/ConvLSTM_pytorch/tree/master)
+[ConvLSTM](https://github.com/ndrplz/ConvLSTM_pytorch/tree/master) -->

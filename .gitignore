@@ -12,6 +12,7 @@ test.py
 pose_estimation_single.py
 fall_feature.py
 pose_estimation_single.py
+README.txt
 # *.txt
 *.sh
 *.csv
