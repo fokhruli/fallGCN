@@ -212,20 +212,70 @@ The system uses STGCN_LSTM architecture with two variants:
 5. **Classification**: Processed through fully connected layers to generate fall probability
 6. **Training**: Uses weighted Binary Cross-Entropy loss to handle class imbalance
 
-### Training Process
-1. **Configure Training Parameters**
-   ```bash
-   # Edit config.yaml to set:
-   - Learning rate
-   - Batch size
-   - Number of epochs
-   - Model architecture parameters
-   ```
 
-2. **Start Training**
-   ```bash
-   python train.py --model [vanilla|fusion] --config config.yaml
-   ```
+<!-- 1. **Configure Training Parameters**
+
+For now, I hardcorded all parameters in the model and trainer.py file.
+
+here, there is two model given,
+one is normal stgcn with 2 lstm layer and for loss we used weighted loss
+others,
+use fusion mechanisam to combine both stgcn and biomechanical features, the fusion is based on attention fusion so, model can rely on important role of biomechanical fearures from stgcn query (it actually worked better while training then concatenining or other fusion mechnicsam)
+
+script is simple 
+normal stgcn: python STGCN_LSTM/trainer.py
+
+with biomechanical fearture fusion: python STGCN_LSTM_Biomechanics/trainer.py
+
+there is also other files
+STGCN_LSTM/graph.py: for graph information in gcn
+STGCN_LSTM/data_processing.py : crate dataset for model requirements
+STGCN_LSTM/stgcn.py:  whole model build here, details will given in report -->
+
+### Training Process
+
+#### Fall Detection Models
+```
+├── STGCN_LSTM/
+│   ├── trainer.py          # Training script for basic model
+│   ├── graph.py           # Graph structure definitions
+│   └── data_processing.py # Dataset preparation utilities
+│
+├── STGCN_LSTM_Biomechanics/
+│   ├── trainer.py          # Training script for fusion model
+│   ├── graph.py           # Graph structure definitions
+│   └── data_processing.py # Dataset preparation utilities
+```
+
+#### Model Variants
+
+1. Basic ST-GCN with LSTM (`STGCN_LSTM/`)
+- Basic implementation of Spatial-Temporal GCN with LSTM
+- Processes skeleton data only
+- Contains:
+  - `trainer.py`: Main training script
+  - `graph.py`: Graph structure and adjacency matrix definitions
+  - `data_processing.py`: Data preparation utilities
+
+2. ST-GCN with Biomechanical Features (`STGCN_LSTM_Biomechanics/`)
+- Enhanced model with biomechanical feature fusion
+- Attention-based fusion mechanism
+- Contains:
+  - `trainer.py`: Training script with fusion implementation
+  - `graph.py`: Graph definitions 
+  - `data_processing.py`: Extended data processing for biomechanical features
+
+## Training Process
+
+For basic ST-GCN model:
+```bash
+python STGCN_LSTM/trainer.py
+```
+
+For biomechanical fusion model:
+```bash
+python STGCN_LSTM_Biomechanics/trainer.py
+```
 
 
 ## Inference
@@ -260,6 +310,8 @@ Generated plots include:
 - Precision-Recall curves
 - ROC curves
 - Confusion matrices
+
+
 <!-- 
 ### Logging
 - Logs are stored in `logs/inference.log`
