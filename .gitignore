@@ -15,8 +15,6 @@ Biomech_feature_based/svm.py
 fall_feature.py
 test.py
 pose_estimation_single.py
-fall_feature.py
-pose_estimation_single.py
 README.txt
 predict.py
 # *.txt
