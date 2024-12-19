@@ -303,15 +303,30 @@ Both models are available on Hugging Face Hub: `fokhrul006/fall_prediction`
 ### Metrics
 The pipeline automatically calculates:
 - Precision, Recall, F1-Score
-- AUPRC and ROC AUC
-- Confusion Matrix
+- Area Under Precision-Recall Curve (AUPRC)
+
 
 ### Visualization
-Generated plots include:
-- Precision-Recall curves
-- ROC curves
-- Confusion matrices
 
+* AUPRC
+
+<p align="center">
+  <img src="images/confusion_matrix_vanilla.png" width="400" alt="AUPRC for Vanilla ST-GCN"/>
+  <img src="images/confusion_matrix_fusion.png" width="400" alt="AUPRC for ST-GCN with Biomechanical Fusion"/>
+</p>
+<p align="center">
+  <em>Left: Vanilla ST-GCN &nbsp;&nbsp;&nbsp;&nbsp; Right: ST-GCN with Biomechanical Feature Fusion</em>
+</p>
+
+* Confusion Matrices
+
+<p align="center">
+  <img src="images/precision_recall_curve_vanilla.png" width="400" alt="Confusion Matrix for Vanilla ST-GCN"/>
+  <img src="images/precision_recall_curve_fusion.png" width="400" alt="Confusion Matrix for ST-GCN with Biomechanical Fusion"/>
+</p>
+<p align="center">
+  <em>Left: Vanilla ST-GCN &nbsp;&nbsp;&nbsp;&nbsp; Right: ST-GCN with Biomechanical Feature Fusion</em>
+</p>
 
 <!-- 
 ### Logging
