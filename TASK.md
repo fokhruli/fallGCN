@@ -99,7 +99,7 @@ Implementation of a fall prediction system using pose time series data from the 
    - Recall calculation
    - F1-score evaluation
 
-## Project Deliverables
+<!-- ## Project Deliverables
 
 ### Documentation
 
@@ -112,4 +112,4 @@ Implementation of a fall prediction system using pose time series data from the 
   - Implementation code
   - Documentation
   - Usage examples
-  - Testing procedures
+  - Testing procedures -->
