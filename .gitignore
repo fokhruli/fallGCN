@@ -17,6 +17,7 @@ test.py
 pose_estimation_single.py
 pose_mediapipe_.py
 README.txt
+results.txt
 predict.py
 Biomech_feature_based/
 # *.txt
