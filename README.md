@@ -62,8 +62,13 @@ A repository for predicting falls using skeletal (pose) and biomechanics data. T
    ```
 
 ## Dataset
-* [Multiple cameras fall dataset](https://www.iro.umontreal.ca/~labimage/Dataset/)
-* [Technical report](https://www.iro.umontreal.ca/~labimage/Dataset/technicalReport.pdf)
+* [Multiple cameras fall dataset](https://www.iro.umontreal.ca/~labimage/Dataset/) (**Now training and inference code only available for this dataset.**)
+> Full dataset details available in the [technical report](https://www.iro.umontreal.ca/~labimage/Dataset/technicalReport.pdf)
+* [Le2i Fall Detection Dataset](http://le2i.cnrs.fr/Fall-detection-Dataset) 
+* [UR Fall Detection Dataset](http://fenix.univ.rzeszow.pl/~mkepski/ds/uf.html)
+
+
+<!-- * [Technical report](https://www.iro.umontreal.ca/~labimage/Dataset/technicalReport.pdf) -->
 ### Data Download and Setup
 
 1. Download the dataset:
