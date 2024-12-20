@@ -51,9 +51,9 @@ MASS_RATIOS = {
     'foot': 0.0143
 }
 
-# Define the features to calculate
+# Define the features to calculate (45 features total)
 FEATURE_NAMES = [
-    # Body Segment Angles (27 features)
+    # 1. Body Segment Angles (27 features)
     'trunk_flex_ext_angle',
     'trunk_abd_add_angle',
     'trunk_rot_angle',
@@ -86,46 +86,25 @@ FEATURE_NAMES = [
     'shank_right_abd_add_angle',
     'shank_right_rot_angle',
     
-    # Centroid Locations (3 features)
-    'C_upper',
-    'C_lower',
-    'C_total',
+    # 2. Centroid Locations (9 features)
+    'C_upper_x', 'C_upper_y', 'C_upper_z',
+    'C_lower_x', 'C_lower_y', 'C_lower_z',
+    'C_total_x', 'C_total_y', 'C_total_z',
     
-    # Hip and Shoulder Coordinates (14 features)
+    # 3. Hip and Shoulder Coordinates (8 features)
     'left_hip_x', 'left_hip_y',
     'right_hip_x', 'right_hip_y',
     'left_shoulder_x', 'left_shoulder_y',
-    'right_shoulder_x', 'right_shoulder_y',
-    'left_elbow_x', 'left_elbow_y',
-    'right_elbow_x', 'right_elbow_y',
-    'left_knee_x', 'left_knee_y',
-    
-    # -->: Yaw Trunk Angle is included as 'trunk_rot_angle'
+    'right_shoulder_x', 'right_shoulder_y'
 ]
 
 def load_landmark_data(csv_file):
-    """
-    Load landmark data from a CSV file.
-    
-    Args:
-        csv_file (str): Path to the CSV file.
-    
-    Returns:
-        pd.DataFrame: DataFrame containing landmark data.
-    """
+    """Load landmark data from a CSV file."""
     df = pd.read_csv(csv_file, header=None)
     return df
 
 def extract_landmarks(row):
-    """
-    Extract landmark coordinates from a row.
-    
-    Args:
-        row (pd.Series): Row from the DataFrame.
-    
-    Returns:
-        dict: Dictionary mapping landmark names to their (x, y, z) coordinates.
-    """
+    """Extract landmark coordinates from a row."""
     coords = {}
     for i in range(33):
         landmark_name = LANDMARK_NAMES.get(i)
@@ -137,17 +116,7 @@ def extract_landmarks(row):
     return coords
 
 def calculate_joint_angle(p1, p2, p3):
-    """
-    Calculate the angle at joint p2 formed by points p1, p2, p3.
-    
-    Args:
-        p1 (np.array): Coordinates of the first point.
-        p2 (np.array): Coordinates of the joint point.
-        p3 (np.array): Coordinates of the third point.
-    
-    Returns:
-        float: Angle in degrees at joint p2.
-    """
+    """Calculate the angle at joint p2 formed by points p1, p2, p3."""
     v1 = p1 - p2
     v2 = p3 - p2
     norm_v1 = np.linalg.norm(v1)
@@ -155,22 +124,12 @@ def calculate_joint_angle(p1, p2, p3):
     if norm_v1 == 0 or norm_v2 == 0:
         return 0.0
     cos_angle = np.dot(v1, v2) / (norm_v1 * norm_v2)
-    cos_angle = np.clip(cos_angle, -1.0, 1.0)  # Prevent numerical errors
+    cos_angle = np.clip(cos_angle, -1.0, 1.0)
     angle = np.arccos(cos_angle)
     return np.degrees(angle)
 
 def calculate_segment_angle(p1, p2, vertical=np.array([0, 1, 0])):
-    """
-    Calculate the angle between a body segment and the vertical axis.
-    
-    Args:
-        p1 (np.array): Starting point of the segment.
-        p2 (np.array): Ending point of the segment.
-        vertical (np.array): Vertical axis vector.
-    
-    Returns:
-        float: Angle in degrees.
-    """
+    """Calculate the angle between a body segment and the vertical axis."""
     segment = p2 - p1
     norm_segment = np.linalg.norm(segment)
     norm_vertical = np.linalg.norm(vertical)
@@ -182,76 +141,23 @@ def calculate_segment_angle(p1, p2, vertical=np.array([0, 1, 0])):
     return np.degrees(angle)
 
 def calculate_centroid(points):
-    """
-    Calculate the centroid of a set of points.
-    
-    Args:
-        points (list): List of (x, y, z) coordinates.
-    
-    Returns:
-        np.array: Centroid coordinates [x, y, z].
-    """
+    """Calculate the centroid of a set of points."""
     return np.mean(points, axis=0)
 
 def calculate_yaw_angle(shoulder_l, shoulder_r):
-    """
-    Calculate the yaw angle of the trunk.
-    
-    Args:
-        shoulder_l (np.array): Left shoulder coordinates [x, y, z].
-        shoulder_r (np.array): Right shoulder coordinates [x, y, z].
-    
-    Returns:
-        float: Yaw angle in degrees.
-    """
+    """Calculate the yaw angle of the trunk."""
     delta_y = shoulder_r[1] - shoulder_l[1]
     delta_x = shoulder_r[0] - shoulder_l[0]
     return np.degrees(np.arctan2(delta_y, delta_x))
 
-def calculate_frontal_plane_normal(coords):
-    """
-    Calculate the normal vector of the frontal plane.
-    
-    Args:
-        coords (dict): Dictionary of landmark coordinates.
-    
-    Returns:
-        np.array: Normalized frontal plane normal vector.
-    """
-    chest_vector = coords['right_shoulder'] - coords['left_shoulder']
-    pelvis_vector = coords['right_hip'] - coords['left_hip']
-    normal = np.cross(chest_vector, pelvis_vector)
-    norm = np.linalg.norm(normal)
-    if norm == 0:
-        return np.array([0, 0, 1])  # Default normal if vectors are parallel
-    return normal / norm
-
 def find_waist_point(coords, alpha=0.5):
-    """
-    Calculate the waist point for body segmentation.
-    
-    Args:
-        coords (dict): Dictionary of landmark coordinates.
-        alpha (float): Weighting factor for waist level.
-    
-    Returns:
-        np.array: Waist point coordinates [x, y, z].
-    """
+    """Calculate the waist point for body segmentation."""
     hip_center = (coords['left_hip'] + coords['right_hip']) / 2
     shoulder_center = (coords['left_shoulder'] + coords['right_shoulder']) / 2
     return alpha * hip_center + (1 - alpha) * shoulder_center
 
-def calculate_centroids(coords, waist_point):
-    """
-    Calculate upper body, lower body, and total body centroids as distances from the waist point.
-    
-    Args:
-        coords (dict): Dictionary of landmark coordinates.
-        waist_point (np.array): Coordinates of the waist point.
-    
-    Returns:
-        dict: Dictionary containing centroid distances.
-    """
+def calculate_centroids(coords):
+    """Calculate upper body, lower body, and total body centroids with x,y,z coordinates."""
     # Upper Body Centroid
     upper_points = [
         coords['left_shoulder'], coords['right_shoulder'],
@@ -259,7 +165,6 @@ def calculate_centroids(coords, waist_point):
         coords['left_wrist'], coords['right_wrist']
     ]
     C_upper = calculate_centroid(upper_points)
-    distance_upper = np.linalg.norm(C_upper - waist_point)
     
     # Lower Body Centroid
     lower_points = [
@@ -268,56 +173,30 @@ def calculate_centroids(coords, waist_point):
         coords['left_ankle'], coords['right_ankle']
     ]
     C_lower = calculate_centroid(lower_points)
-    distance_lower = np.linalg.norm(C_lower - waist_point)
     
     # Total Body Centroid
     all_points = list(coords.values())
     C_total = calculate_centroid(all_points)
-    distance_total = np.linalg.norm(C_total - waist_point)
     
     return {
-        'C_upper': distance_upper,
-        'C_lower': distance_lower,
-        'C_total': distance_total
+        'C_upper': C_upper,
+        'C_lower': C_lower,
+        'C_total': C_total
     }
 
-def calculate_segment_mass(total_mass, segment, gender='male'):
-    """
-    Calculate segment mass based on Plagenhoef (1983) data.
-    
-    Args:
-        total_mass (float): Total body mass in kg.
-        segment (str): Segment name.
-        gender (str): 'male' or 'female'.
-    
-    Returns:
-        float: Mass of the specified segment in kg.
-    """
-    return total_mass * MASS_RATIOS[segment] # MASS_RATIOS[gender][segment]
-
-def extract_biomechanical_features(coords, total_mass, gender='male'):
-    """
-    Extract all 45 biomechanical features.
-    
-    Args:
-        coords (dict): Dictionary of landmark coordinates.
-        total_mass (float): Total body mass in kg.
-        gender (str): 'male' or 'female'.
-    
-    Returns:
-        dict: Dictionary containing all 45 biomechanical features.
-    """
+def extract_biomechanical_features(coords):
+    """Extract all 45 biomechanical features."""
     features = {}
     
     # 1. Body Segment Angles (27 features)
     # a. Trunk Angles
     hip_center = (coords['left_hip'] + coords['right_hip']) / 2
     shoulder_center = (coords['left_shoulder'] + coords['right_shoulder']) / 2
-    spine_vector = shoulder_center - hip_center
     
     trunk_flex_ext = calculate_segment_angle(hip_center, shoulder_center)
-    trunk_abd_add = calculate_segment_angle(shoulder_center, hip_center)  # Example
+    trunk_abd_add = calculate_segment_angle(shoulder_center, hip_center)
     trunk_rot = calculate_yaw_angle(coords['left_shoulder'], coords['right_shoulder'])
+    
     features['trunk_flex_ext_angle'] = trunk_flex_ext
     features['trunk_abd_add_angle'] = trunk_abd_add
     features['trunk_rot_angle'] = trunk_rot
@@ -328,11 +207,8 @@ def extract_biomechanical_features(coords, total_mass, gender='male'):
         elbow = coords[f'{side}_elbow']
         wrist = coords[f'{side}_wrist']
         
-        # Flexion/Extension
         flex_ext = calculate_joint_angle(shoulder, elbow, wrist)
-        # Abduction/Adduction
         abd_add = calculate_segment_angle(shoulder, elbow)
-        # Rotation
         rot = calculate_segment_angle(elbow, wrist)
         
         features[f'upper_arm_{side}_flex_ext_angle'] = flex_ext
@@ -345,12 +221,9 @@ def extract_biomechanical_features(coords, total_mass, gender='male'):
         wrist = coords[f'{side}_wrist']
         pinky = coords[f'{side}_pinky']
         
-        # Flexion/Extension
-        flex_ext = calculate_joint_angle(coords[f'{side}_elbow'], coords[f'{side}_wrist'], coords[f'{side}_pinky'])
-        # Abduction/Adduction
-        abd_add = calculate_segment_angle(coords[f'{side}_elbow'], coords[f'{side}_wrist'])
-        # Rotation
-        rot = calculate_segment_angle(coords[f'{side}_wrist'], coords[f'{side}_pinky'])
+        flex_ext = calculate_joint_angle(elbow, wrist, pinky)
+        abd_add = calculate_segment_angle(elbow, wrist)
+        rot = calculate_segment_angle(wrist, pinky)
         
         features[f'forearm_{side}_flex_ext_angle'] = flex_ext
         features[f'forearm_{side}_abd_add_angle'] = abd_add
@@ -360,13 +233,11 @@ def extract_biomechanical_features(coords, total_mass, gender='male'):
     for side in ['left', 'right']:
         hip = coords[f'{side}_hip']
         knee = coords[f'{side}_knee']
+        ankle = coords[f'{side}_ankle']
         
-        # Flexion/Extension
-        flex_ext = calculate_joint_angle(hip, knee, coords[f'{side}_ankle'])
-        # Abduction/Adduction
+        flex_ext = calculate_joint_angle(hip, knee, ankle)
         abd_add = calculate_segment_angle(hip, knee)
-        # Rotation
-        rot = calculate_segment_angle(knee, coords[f'{side}_ankle'])
+        rot = calculate_segment_angle(knee, ankle)
         
         features[f'thigh_{side}_flex_ext_angle'] = flex_ext
         features[f'thigh_{side}_abd_add_angle'] = abd_add
@@ -378,55 +249,37 @@ def extract_biomechanical_features(coords, total_mass, gender='male'):
         ankle = coords[f'{side}_ankle']
         heel = coords[f'{side}_heel']
         
-        # Flexion/Extension
         flex_ext = calculate_joint_angle(knee, ankle, heel)
-        # Abduction/Adduction
         abd_add = calculate_segment_angle(knee, ankle)
-        # Rotation
         rot = calculate_segment_angle(ankle, heel)
         
         features[f'shank_{side}_flex_ext_angle'] = flex_ext
         features[f'shank_{side}_abd_add_angle'] = abd_add
         features[f'shank_{side}_rot_angle'] = rot
     
-    # Repeat similar calculations for other body segments if applicable
-    # Ensure all 9 segments have 3 angles each
+    # 2. Centroid Locations (9 features)
+    centroids = calculate_centroids(coords)
     
-    # 2. Centroid Locations (3 features)
-    waist_point = find_waist_point(coords, alpha=0.5)
-    centroids = calculate_centroids(coords, waist_point)
-    features['C_upper'] = centroids['C_upper']
-    features['C_lower'] = centroids['C_lower']
-    features['C_total'] = centroids['C_total']
+    # Store x,y,z coordinates for each centroid
+    for centroid_name in ['C_upper', 'C_lower', 'C_total']:
+        centroid_coords = centroids[centroid_name]
+        features[f'{centroid_name}_x'] = centroid_coords[0]
+        features[f'{centroid_name}_y'] = centroid_coords[1]
+        features[f'{centroid_name}_z'] = centroid_coords[2]
     
-    # 3. Yaw Trunk Angle (Already included as 'trunk_rot_angle')
-    
-    # 4. Hip and Shoulder Coordinates (14 features)
+    # 3. Hip and Shoulder Coordinates (8 features)
     key_joints = [
         'left_hip', 'right_hip',
-        'left_shoulder', 'right_shoulder',
-        'left_elbow', 'right_elbow',
-        'left_knee'
+        'left_shoulder', 'right_shoulder'
     ]
     for joint in key_joints:
         features[f'{joint}_x'] = coords[joint][0]
         features[f'{joint}_y'] = coords[joint][1]
     
-    # 5. Joint Angles (Removed to prevent redundancy)
-    # Ensure all necessary angles are included in Body Segment Angles
-    
     return features
 
-def process_csv(input_csv, output_csv, total_mass=70.0, gender='male'):
-    """
-    Process the input CSV to calculate biomechanical features and save to output CSV.
-    
-    Args:
-        input_csv (str): Path to the input CSV file.
-        output_csv (str): Path to save the output CSV file with features.
-        total_mass (float): Total body mass in kg.
-        gender (str): 'male' or 'female'.
-    """
+def process_csv(input_csv, output_csv):
+    """Process the input CSV to calculate biomechanical features and save to output CSV."""
     # Load data
     df = load_landmark_data(input_csv)
     num_frames = df.shape[0]
@@ -434,21 +287,21 @@ def process_csv(input_csv, output_csv, total_mass=70.0, gender='male'):
     
     # Initialize list to hold features for each frame
     features_list = []
-    count_frame = 0
     for index, row in df.iterrows():
-        print(f"Frame number {count_frame} processing right now")
+        print(f"Processing frame {index + 1}/{num_frames}")
+        
+        # Extract landmarks
         coords = extract_landmarks(row)
         
-        # Handle cases where certain landmarks might be missing or have NaN values
+        # Skip frames with missing landmarks
         missing_landmarks = [name for name, coord in coords.items() if np.isnan(coord).any()]
         if missing_landmarks:
             print(f"Frame {index}: Missing landmarks {missing_landmarks}. Skipping frame.")
             continue
         
         # Extract biomechanical features
-        features = extract_biomechanical_features(coords, total_mass, gender)
+        features = extract_biomechanical_features(coords)
         features_list.append(features)
-        count_frame += 1
     
     # Create DataFrame from features
     features_df = pd.DataFrame(features_list, columns=FEATURE_NAMES)
@@ -457,11 +310,7 @@ def process_csv(input_csv, output_csv, total_mass=70.0, gender='male'):
     features_df.to_csv(output_csv, index=False, header=None)
     print(f"Features saved to {output_csv}")
 
-# Example usage
 if __name__ == "__main__":
     input_csv_path = 'fall_dataset_preprocessed/X_train_fall.csv'  # Replace with your input CSV file path
     output_csv_path = 'fall_dataset_preprocessed/X_train_fall_biomechanical_features.csv'  # Desired output CSV file path
-    total_body_mass = 70.0  # Example total body mass in kg
-    gender = 'male'          # 'male' or 'female'
-    
-    process_csv(input_csv_path, output_csv_path, total_body_mass, gender)
+    process_csv(input_csv_path, output_csv_path)
