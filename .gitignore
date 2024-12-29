@@ -20,6 +20,8 @@ README.txt
 results.txt
 predict.py
 Biomech_feature_based/
+dataset_landmark/
+dataset_UVA/
 # *.txt
 *.sh
 *.csv
